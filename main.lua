@@ -9,9 +9,10 @@ local image = nil
 function love.load()
     image = love.graphics.newImage("Background.png")
 
-    Luven.init()
+    Luven.init(love.graphics.getWidth(), love.graphics.getWidth())
 
-    local lightId = Luven.addNormalLight(100, 100, { 1.0, 0.0, 1.0 }, 64)
+    local lightId = Luven.addNormalLight(400, 400, { 1.0, 1.0, 0.0 }, 7)
+    --Luven.removeLight(light)
 end -- function
 
 function love.update(dt)
