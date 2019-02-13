@@ -2,7 +2,7 @@
 Minimalistic lighting system for [Löve2D](https://love2d.org/)
 
 # Luven's Public Trello
-https://trello.com/b/4kLFwfyV/luven-love2d
+https://trello.com/b/4kLFwfyV
 
 # Luven's Wiki
 
