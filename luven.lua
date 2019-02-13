@@ -211,4 +211,11 @@ function luven.setLightColor(lightId, color)
     luven_shader:send(currentLights[index].name .. ".diffuse", currentLights[index].color)
 end -- function
 
+function luven.setLightPosition(lightId, x, y)
+    local index = findLightIndex(lightId)
+    currentLights[index].x = x
+    currentLights[index].y = y
+    luven_shader:send(currentLights[index].name .. ".position", currentLights[index].position)
+end -- function
+
 return luven
