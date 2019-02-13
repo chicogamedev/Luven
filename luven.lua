@@ -204,7 +204,14 @@ function luven.setLightPosition(lightId, x, y)
     local index = lightId + 1
     currentLights[index].x = x
     currentLights[index].y = y
-    luven_shader:send(currentLights[index].name .. ".position", currentLights[index].position)
+    luven_shader:send(currentLights[index].name .. ".position", { currentLights[index].x, currentLights[index].y })
+end -- function
+
+function luven.moveLight(lightId, vx, vy)
+    local index = lightId + 1
+    currentLights[index].x = currentLights[index] + vx
+    currentLights[index].y = currentLights[index] + vy
+    luven_shader:send(currentLights[index].name .. ".position", { currentLights[index].x, currentLights[index].y })
 end -- function
 
 return luven
