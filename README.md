@@ -1,5 +1,5 @@
 # Luven
-Minimalistic lighting system for Löve2D
+Minimalistic lighting system for [Löve2D](https://love2d.org/)
 
 # Luven's Public Trello
 https://trello.com/b/4kLFwfyV/luven-love2d
