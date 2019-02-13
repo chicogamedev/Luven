@@ -10,12 +10,18 @@ function love.load()
     image = love.graphics.newImage("Background.png")
 
     Luven.init(love.graphics.getWidth(), love.graphics.getWidth())
-    Luven.setAmbientLightColor({ 0.1, 0.1, 0.1 })
+    Luven.setAmbientLightColor({ 0, 0, 0 })
 
     local lightId = Luven.addNormalLight(400, 400, { 1.0, 1.0, 1.0 }, 7)
-    Luven.setLightPower(lightId, 25)
-    Luven.setLightColor(lightId, { 1.0, 0.0, 1.0 })
-    --Luven.removeLight(light)
+    local lightId2 = Luven.addNormalLight(700, 400, {1.0, 1.0, 0.0 }, 7)
+
+    print(lightId)
+    print(lightId2)
+
+    Luven.setLightPower(lightId, 5)
+    Luven.setLightPower(lightId2, 19)
+    -- Luven.setLightColor(lightId, { 1.0, 0.0, 1.0 })
+    -- Luven.removeLight(light)
 end -- function
 
 function love.update(dt)

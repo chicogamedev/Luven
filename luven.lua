@@ -127,17 +127,6 @@ local function getNumberLights()
     return count
 end -- function
 
-local function findLightIndex(lightId)
-    for i = 1, NUM_LIGHTS do
-        local currentLight = currentLights[i]
-        if (currentLight ~= nil) then
-            if (currentLight.id == lightId) then
-                return i
-            end -- if
-        end -- if
-    end -- for
-end -- if
-
 -- ///////////////////////////////////////////////
 -- /// Luven general functions
 -- ///////////////////////////////////////////////
@@ -193,26 +182,26 @@ function luven.addNormalLight(x, y, color, power)
 end -- function
 
 function luven.removeLight(lightId)
-    local index = findLightIndex(lightId)
+    local index = lightId + 1
     currentLights[index].enabled = false
     luven_shader:send(currentLights[index].name .. ".enabled", currentLights[index].enabled)
 end -- function
 
 function luven.setLightPower(lightId, power)
-    local index = findLightIndex(lightId)
+    local index = lightId + 1
     currentLights[index].power = power
     luven_shader:send(currentLights[index].name .. ".power", currentLights[index].power)
 end -- function
 
 -- param : color = { r, g, b } (values between 0 - 1)
 function luven.setLightColor(lightId, color)
-    local index = findLightIndex(lightId)
+    local index = lightId + 1
     currentLights[index].color = color
     luven_shader:send(currentLights[index].name .. ".diffuse", currentLights[index].color)
 end -- function
 
 function luven.setLightPosition(lightId, x, y)
-    local index = findLightIndex(lightId)
+    local index = lightId + 1
     currentLights[index].x = x
     currentLights[index].y = y
     luven_shader:send(currentLights[index].name .. ".position", currentLights[index].position)
