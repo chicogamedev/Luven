@@ -5,6 +5,10 @@ Luven = require "luven"
 Inspect = require "dev/inspect"
 
 local image = nil
+local moveSpeed = 150
+
+local lightId = 0
+local lightId2 = 0
 
 function love.load()
     image = love.graphics.newImage("Background.png")
@@ -12,20 +16,35 @@ function love.load()
     Luven.init(love.graphics.getWidth(), love.graphics.getWidth())
     Luven.setAmbientLightColor({ 0, 0, 0 })
 
-    local lightId = Luven.addNormalLight(400, 400, { 1.0, 1.0, 1.0 }, 7)
-    local lightId2 = Luven.addNormalLight(700, 400, {1.0, 1.0, 0.0 }, 7)
+    lightId = Luven.addNormalLight(400, 400, { 1.0, 0.0, 1.0 }, 8)
+    lightId2 = Luven.addNormalLight(700, 400, {1.0, 1.0, 0.0 }, 10)
 
-    print(lightId)
-    print(lightId2)
-
-    Luven.setLightPower(lightId, 5)
-    Luven.setLightPower(lightId2, 19)
+    -- Luven.setLightPower(lightId, 5)
+    -- Luven.setLightPower(lightId2, 19)
     -- Luven.setLightColor(lightId, { 1.0, 0.0, 1.0 })
     -- Luven.removeLight(light)
 end -- function
 
 function love.update(dt)
-    
+    local vx, vy = 0, 0
+
+    if (love.keyboard.isDown("w")) then
+        vy = vy - moveSpeed * dt
+    end -- if
+
+    if (love.keyboard.isDown("s")) then
+        vy = vy + moveSpeed * dt
+    end -- if
+
+    if (love.keyboard.isDown("a")) then
+        vx = vx - moveSpeed * dt
+    end -- if
+
+    if (love.keyboard.isDown("d")) then
+        vx = vx + moveSpeed * dt
+    end -- if
+
+    Luven.moveLight(lightId, vx, vy)
 end -- function
 
 function love.draw()

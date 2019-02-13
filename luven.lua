@@ -1,5 +1,5 @@
 local luven = {
-    _VERSION     = 'luven v0.1',
+    _VERSION     = 'luven v0.5',
     _URL         = 'https://github.com/lionelleeser/Luven',
     _DESCRIPTION = 'A minimalitic lighting system for Löve2D',
     _LICENSE     = [[
@@ -209,8 +209,8 @@ end -- function
 
 function luven.moveLight(lightId, vx, vy)
     local index = lightId + 1
-    currentLights[index].x = currentLights[index] + vx
-    currentLights[index].y = currentLights[index] + vy
+    currentLights[index].x = currentLights[index].x + vx
+    currentLights[index].y = currentLights[index].y + vy
     luven_shader:send(currentLights[index].name .. ".position", { currentLights[index].x, currentLights[index].y })
 end -- function
 
