@@ -53,6 +53,7 @@ local shader_code = [[
 
     vec4 effect(vec4 color, Image image, vec2 uvs, vec2 screen_coords){
         vec4 pixel = Texel(image, uvs);
+        pixel *= color;
 
         vec2 norm_screen = screen_coords / screen;
         vec3 diffuse = ambientLightColor;
