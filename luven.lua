@@ -1,5 +1,5 @@
 local luven = {
-    _VERSION     = 'luven v0.6',
+    _VERSION     = 'luven v0.7',
     _URL         = 'https://github.com/lionelleeser/Luven',
     _DESCRIPTION = 'A minimalitic lighting system for Löve2D',
     _CONTRIBUTORS = 'Lionel Leeser, Pedro Gimeno (Help with shader and camera)',
@@ -43,19 +43,9 @@ luven.camera.transform = nil
 luven.camera.shakeDuration = 0
 luven.camera.shakeMagnitude = 0
 
--- //////
--- /// Local functions
--- /////
-
-local function cameraSet()
-    love.graphics.push()
-    luven.camera.transform:setTransformation(love.graphics.getWidth() / 2, love.graphics.getHeight() / 2, luven.camera.rotation, luven.camera.scaleX, luven.camera.scaleY, luven.camera.x, luven.camera.y)
-    love.graphics.applyTransform(luven.camera.transform)
-end -- function
-
-local function cameraUnset()
-    love.graphics.pop()
-end -- function
+-- //////////////////////////////
+-- /// Camera local functions
+-- //////////////////////////////
 
 local function cameraUpdate(dt)
     if (luven.camera.shakeDuration > 0) then
@@ -75,14 +65,24 @@ local function cameraGetViewMatrix()
     return luven.camera.transform:getMatrix()
 end -- function
 
--- //////
--- /// Accessible functions
--- /////
+-- //////////////////////////////
+-- /// Camera accessible functions
+-- //////////////////////////////
 
 function luven.camera:init(x, y)
     self.transform = love.math.newTransform(x, y)
     self.x = x
     self.y = y
+end -- function
+
+function luven.camera:set()
+    love.graphics.push()
+    self.transform:setTransformation(love.graphics.getWidth() / 2, love.graphics.getHeight() / 2, self.rotation, self.scaleX, self.scaleY, self.x, self.y)
+    love.graphics.applyTransform(self.transform)
+end -- function
+
+function luven.camera:unset()
+    love.graphics.pop()
 end -- function
 
 function luven.camera:setPosition(x, y)
@@ -252,7 +252,7 @@ end -- function
 function luven.drawBegin()
     if (useIntegratedCamera) then
         cameraDraw()
-        cameraSet()
+        luven.camera:set()
 
         -- luvenShader:send("viewMatrix", { cameraGetViewMatrix() })
         luven.sendCustomViewMatrix({ cameraGetViewMatrix() })
@@ -265,7 +265,7 @@ function luven.drawEnd()
     love.graphics.setShader()
 
     if (useIntegratedCamera) then
-        cameraUnset()
+        luven.camera:unset()
     end -- if
 end -- function
 
