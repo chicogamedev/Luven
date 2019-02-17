@@ -4,6 +4,7 @@
 Luven = require "luven"
 Inspect = require "dev/inspect"
 
+local zoom = 2
 local image = nil
 local moveSpeed = 150
 
@@ -14,7 +15,9 @@ function love.load()
     image = love.graphics.newImage("Background.png")
 
     Luven.init(love.graphics.getWidth(), love.graphics.getWidth())
-    Luven.setAmbientLightColor({ 0, 0, 0 })
+    Luven.setAmbientLightColor({ 0.1, 0.1, 0.1 })
+    Luven.camera:init(love.graphics.getWidth() / 2, love.graphics.getHeight() / 2)
+    Luven.camera:setScale(zoom)
 
     lightId = Luven.addNormalLight(400, 400, { 1.0, 0.0, 1.0 }, 8)
     lightId2 = Luven.addNormalLight(700, 400, {1.0, 1.0, 0.0 }, 10)
@@ -26,6 +29,8 @@ function love.load()
 end -- function
 
 function love.update(dt)
+    Luven.update(dt)
+    
     local vx, vy = 0, 0
 
     if (love.keyboard.isDown("w")) then
@@ -44,7 +49,13 @@ function love.update(dt)
         vx = vx + moveSpeed * dt
     end -- if
 
-    Luven.moveLight(lightId, vx, vy)
+    Luven.camera:move(vx, vy)
+end -- function
+
+function love.keypressed(key)
+    if (key == "space") then
+        Luven.camera:setShake(0.7, 5.5)
+    end -- if
 end -- function
 
 function love.draw()
