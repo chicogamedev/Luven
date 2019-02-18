@@ -159,7 +159,7 @@ local shader_code = [[
     }
 ]]
 
-local light_types = {
+local lightTypes = {
     normal = 0,
     flickering = 1
 }
@@ -172,15 +172,21 @@ local useIntegratedCamera = true
 -- /// Luven utils local functions
 -- ///////////////////////////////////////////////
 
-local function registerLight(light)
-    light.name = "lights[" .. light.id .."]"
-
-    table.insert(currentLights, light)
+local function updateLight(lightId)
+    local light = currentLights[lightId + 1]
 
     luvenShader:send(light.name .. ".position", { light.x , light.y })
     luvenShader:send(light.name .. ".diffuse", light.color)
     luvenShader:send(light.name .. ".power", light.power)
     luvenShader:send(light.name .. ".enabled", light.enabled)
+end -- function
+
+local function registerLight(light)
+    light.name = "lights[" .. light.id .."]"
+
+    table.insert(currentLights, light)
+
+    updateLight(light.id)
 end -- function
 
 local function getNumberLights()
@@ -218,6 +224,24 @@ local function getNextId()
     end -- if
 end -- function
 
+local function randomFloat(min, max)
+        return min + love.math.random() * (max - min);
+end -- function
+
+local function generateFlicker(lightId)
+    local light = currentLights[lightId + 1]
+
+    light.color[1] = randomFloat(light.colorRange.min[1], light.colorRange.max[1])
+    light.color[2] = randomFloat(light.colorRange.min[2], light.colorRange.max[2])
+    light.color[3] = randomFloat(light.colorRange.min[3], light.colorRange.max[3])
+
+    light.power = randomFloat(light.powerRange.min, light.powerRange.max)
+
+    light.flickTimer = randomFloat(light.speedRange.min, light.speedRange.max)
+
+    updateLight(light.id)
+end -- if
+
 -- ///////////////////////////////////////////////
 -- /// Luven general functions
 -- ///////////////////////////////////////////////
@@ -230,9 +254,6 @@ function luven.init(screenWidth, screenHeight, useCamera)
     else
         useIntegratedCamera = true
     end -- if
-
-    assert(tonumber(screenWidth), "luven.init() : Wrong parameter type, screenWidth, expected number.")
-    assert(tonumber(screenHeight), "luven.init() : Wrong parameter type, screenHeight, expected number.")
 
     luvenShader = love.graphics.newShader(shader_code)
     luvenShader:send("screen", {
@@ -256,7 +277,13 @@ function luven.update(dt)
         cameraUpdate(dt)
     end -- if
 
-    -- Update of different lights (if types need update)
+    for _, light in pairs(currentLights) do
+        if (light.enabled) then
+            if (light.type == lightTypes.flickering) then
+
+            end -- if
+        end -- if
+    end -- for
 end -- function
 
 function luven.sendCustomViewMatrix(viewMatrix)
@@ -290,17 +317,44 @@ end -- function
 function luven.addNormalLight(x, y, color, power)
     local light = {}
 
+    light.id = getNextId()
     light.x = x
     light.y = y
     light.color = color
     light.power = power
-    light.type = light_types.normal
-    
-    light.id = getNextId()
+    light.type = lightTypes.normal
 
     light.enabled = true
 
     registerLight(light)
+
+    return light.id
+end -- function
+
+-- params : colorRange = { min = { r, g, b }, max = { r, g, b }}
+--          powerRange = { min = n, max = n }
+--          speedRange = { min = n, max = n }
+-- return : lightId
+function luven.addFlickeringLight(x, y, colorRange, powerRange, speedRange)
+    local light = {}
+
+    light.id = getNextId()
+    light.x = x
+    light.y = y
+    light.color = { 0, 0, 0 }
+    light.power = 0
+    light.type = lightTypes.flickering
+
+    light.flickTimer = 0
+    light.colorRange = colorRange
+    light.powerRange = powerRange
+    light.speedRange = speedRange
+
+    light.enabled = true
+
+    registerLight(light)
+
+    generateFlicker(light.id)
 
     return light.id
 end -- function
