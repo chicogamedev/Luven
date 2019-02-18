@@ -15,13 +15,12 @@ function love.load()
     image = love.graphics.newImage("Background.png")
 
     Luven.init()
-    Luven.setAmbientLightColor({ 0.3, "0.1", 0.1 })
+    Luven.setAmbientLightColor({ 0.1, 0.1, 0.1 })
     Luven.camera:init(love.graphics.getWidth() / 2, love.graphics.getHeight() / 2)
     Luven.camera:setScale(zoom)
 
-    lightId = Luven.addNormalLight(400, 400, { 1.0, 0.0, 1.0 }, 8)
+    lightId = Luven.addNormalLight(100, 400, { 1.0, 0.0, 1.0 }, 8)
     lightId2 = Luven.addNormalLight(700, 400, {1.0, 1.0, 0.0 }, 10)
-
     -- Luven.setLightPower(lightId, 5)
     -- Luven.setLightPower(lightId2, 19)
     -- Luven.setLightColor(lightId, { 1.0, 0.0, 1.0 })

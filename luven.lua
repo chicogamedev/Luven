@@ -113,9 +113,9 @@ end -- function
 -- /// Luven variables declarations
 -- ///////////////////////////////////////////////
 
-local NUM_LIGHTS = 32
+local NUM_LIGHTS = 64
 local shader_code = [[
-    #define NUM_LIGHTS 32
+    #define NUM_LIGHTS 64
 
     struct Light {
         vec2 position;
@@ -183,21 +183,6 @@ local function registerLight(light)
     luvenShader:send(light.name .. ".enabled", light.enabled)
 end -- function
 
-local function getNextId()
-    for i = 1, NUM_LIGHTS do
-        local currentLight = currentLights[i]
-        if (currentLight ~= nil) then
-            if (currentLight.enabled == false) then
-                return i - 1 
-            end -- if
-        else
-            return i - 1
-        end -- if
-    end -- for
-
-    return 0
-end -- function
-
 local function getNumberLights()
     local count = 0
 
@@ -211,6 +196,26 @@ local function getNumberLights()
     end -- for
 
     return count
+end -- function
+
+local function getNextId()
+    for i = 1, NUM_LIGHTS do
+        local currentLight = currentLights[i]
+        if (currentLight ~= nil) then
+            if (currentLight.enabled == false) then
+                return i - 1 
+            end -- if
+        else
+            return i - 1
+        end -- if
+    end -- for
+
+    if (getNumberLights() == NUM_LIGHTS) then
+        -- All lights are in use
+        error("Light cannot be created, no more light available!")
+    else
+        return 0 -- first index
+    end -- if
 end -- function
 
 -- ///////////////////////////////////////////////
@@ -242,19 +247,7 @@ function luven.init(screenWidth, screenHeight, useCamera)
 end -- function
 
 -- param : color = { r, g, b } (Values between 0 - 1)
-function luven.setAmbientLightColor(color)
-    for i = 1, 3 do
-        print(color[i])
-
-        if (not tonumber(color[i])) then
-            error("luven.setAmbientLightColor() : Wrong parameter type, color[" .. i .. "], expected number.")
-        end -- if
-
-        if ((color[i] < 0) or (color[i] > 1)) then
-            error("luven.setAmbientLightColor() : Wrong parameter range, color[" .. i .. "], expected 0 - 1.")
-        end -- if
-    end -- for
-    
+function luven.setAmbientLightColor(color)    
     luvenShader:send("ambientLightColor", color)
 end -- function
 
@@ -274,8 +267,6 @@ function luven.drawBegin()
     if (useIntegratedCamera) then
         cameraDraw()
         luven.camera:set()
-
-        -- luvenShader:send("viewMatrix", { cameraGetViewMatrix() })
         luven.sendCustomViewMatrix({ cameraGetViewMatrix() })
     end -- if
     
