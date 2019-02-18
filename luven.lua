@@ -280,7 +280,11 @@ function luven.update(dt)
     for _, light in pairs(currentLights) do
         if (light.enabled) then
             if (light.type == lightTypes.flickering) then
-
+                if (light.flickTimer > 0) then
+                    light.flickTimer = light.flickTimer - dt
+                else
+                    generateFlicker(light.id)
+                end -- if
             end -- if
         end -- if
     end -- for
