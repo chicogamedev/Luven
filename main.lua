@@ -14,8 +14,8 @@ local lightId2 = 0
 function love.load()
     image = love.graphics.newImage("Background.png")
 
-    Luven.init(love.graphics.getWidth(), love.graphics.getWidth())
-    Luven.setAmbientLightColor({ 0.1, 0.1, 0.1 })
+    Luven.init()
+    Luven.setAmbientLightColor({ 0.3, "0.1", 0.1 })
     Luven.camera:init(love.graphics.getWidth() / 2, love.graphics.getHeight() / 2)
     Luven.camera:setScale(zoom)
 

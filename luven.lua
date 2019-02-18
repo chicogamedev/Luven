@@ -217,13 +217,22 @@ end -- function
 -- /// Luven general functions
 -- ///////////////////////////////////////////////
 
-function luven.init(screen_width, screen_height, useCamera)
-    useIntegratedCamera = useCamera or true
+function luven.init(screenWidth, screenHeight, useCamera)
+    screenWidth = screenWidth or love.graphics.getWidth()
+    screenHeight = screenHeight or love.graphics.getWidth()
+    if (useCamera ~= nil) then
+        useIntegratedCamera = useCamera
+    else
+        useIntegratedCamera = true
+    end -- if
+
+    assert(tonumber(screenWidth), "luven.init() : Wrong parameter type, screenWidth, expected number.")
+    assert(tonumber(screenHeight), "luven.init() : Wrong parameter type, screenHeight, expected number.")
 
     luvenShader = love.graphics.newShader(shader_code)
     luvenShader:send("screen", {
-        screen_width,
-        screen_height
+        screenWidth,
+        screenHeight
     })
 
     for i = 1, NUM_LIGHTS do
@@ -234,6 +243,18 @@ end -- function
 
 -- param : color = { r, g, b } (Values between 0 - 1)
 function luven.setAmbientLightColor(color)
+    for i = 1, 3 do
+        print(color[i])
+
+        if (not tonumber(color[i])) then
+            error("luven.setAmbientLightColor() : Wrong parameter type, color[" .. i .. "], expected number.")
+        end -- if
+
+        if ((color[i] < 0) or (color[i] > 1)) then
+            error("luven.setAmbientLightColor() : Wrong parameter range, color[" .. i .. "], expected 0 - 1.")
+        end -- if
+    end -- for
+    
     luvenShader:send("ambientLightColor", color)
 end -- function
 
