@@ -55,6 +55,10 @@ function love.keypressed(key)
     if (key == "space") then
         Luven.camera:setShake(0.7, 5.5)
     end -- if
+
+    if (key == "f") then
+        Luven.addFlashingLight(Luven.camera.x, Luven.camera.y, { 1.0, 0.0, 0.0 }, 30, 0.3)
+    end -- if
 end -- function
 
 function love.draw()

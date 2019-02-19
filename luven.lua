@@ -161,7 +161,8 @@ local shader_code = [[
 
 local lightTypes = {
     normal = 0,
-    flickering = 1
+    flickering = 1,
+    flashing = 2
 }
 
 local currentLights = {}
@@ -268,7 +269,7 @@ function luven.init(screenWidth, screenHeight, useCamera)
 end -- function
 
 -- param : color = { r, g, b } (Values between 0 - 1)
-function luven.setAmbientLightColor(color)    
+function luven.setAmbientLightColor(color)
     luvenShader:send("ambientLightColor", color)
 end -- function
 
@@ -284,6 +285,14 @@ function luven.update(dt)
                     light.flickTimer = light.flickTimer - dt
                 else
                     generateFlicker(light.id)
+                end -- if
+            elseif (light.type == lightTypes.flashing) then
+                light.timer = light.timer + dt
+                if (light.power < light.maxPower) then
+                    light.power = (light.maxPower * light.timer) / light.speed
+                    luvenShader:send(light.name .. ".power", light.power)
+                else
+                    luven.removeLight(light.id)
                 end -- if
             end -- if
         end -- if
@@ -363,10 +372,30 @@ function luven.addFlickeringLight(x, y, colorRange, powerRange, speedRange)
     return light.id
 end -- function
 
+function luven.addFlashingLight(x, y, color, maxPower, speed)
+    local light = {}
+
+    light.id = getNextId()
+    light.x = x
+    light.y = y
+    light.color = color
+    light.power = 0
+    light.type = lightTypes.flashing
+    
+    light.maxPower = maxPower
+    light.speed = speed
+    light.timer = 0
+
+    light.enabled = true
+
+    registerLight(light)
+end -- function
+
 function luven.removeLight(lightId)
     local index = lightId + 1
     currentLights[index].enabled = false
     luvenShader:send(currentLights[index].name .. ".enabled", currentLights[index].enabled)
+    currentLights[index] = nil
 end -- function
 
 function luven.setLightPower(lightId, power)
