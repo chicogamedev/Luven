@@ -21,6 +21,10 @@ function love.load()
 
     lightId = Luven.addFlickeringLight(600, 400, { min = { 0.8, 0.0, 0.8 }, max = { 1.0, 0.0, 1.0 } }, { min = 2, max = 3 }, { min = 0.2, max = 0.3 })
     lightId2 = Luven.addNormalLight(700, 400, {1.0, 1.0, 0.0 }, 10)
+
+    print(Inspect.inspect(Luven.getLightColor(lightId)))
+    print(Luven.getLightPower(lightId))
+    print(Luven.getLightPosition(lightId))
     -- Luven.setLightPower(lightId, 5)
     -- Luven.setLightPower(lightId2, 19)
     -- Luven.setLightColor(lightId, { 1.0, 0.0, 1.0 })
@@ -57,7 +61,7 @@ function love.keypressed(key)
     end -- if
 
     if (key == "f") then
-        Luven.addFlashingLight(Luven.camera.x, Luven.camera.y, { 1.0, 0.0, 0.0 }, 30, 0.3)
+        Luven.addFlashingLight(Luven.camera.x, Luven.camera.y, { 1.0, 0.0, 0.0 }, 15, 0.05)
     end -- if
 end -- function
 
@@ -67,4 +71,8 @@ function love.draw()
     love.graphics.draw(image, 0, 0, 0, 0.5, 0.5)
 
     Luven.drawEnd()
+end -- function
+
+function love.quit()
+    Luven.dispose()
 end -- function

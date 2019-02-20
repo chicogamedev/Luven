@@ -1,5 +1,5 @@
 local luven = {
-    _VERSION     = 'luven v0.7',
+    _VERSION     = 'luven v0.8',
     _URL         = 'https://github.com/lionelleeser/Luven',
     _DESCRIPTION = 'A minimalitic lighting system for Löve2D',
     _CONTRIBUTORS = 'Lionel Leeser, Pedro Gimeno (Help with shader and camera)',
@@ -185,7 +185,7 @@ end -- function
 local function registerLight(light)
     light.name = "lights[" .. light.id .."]"
 
-    table.insert(currentLights, light)
+    currentLights[light.id + 1] = light
 
     updateLight(light.id)
 end -- function
@@ -263,7 +263,7 @@ function luven.init(screenWidth, screenHeight, useCamera)
     })
 
     for i = 1, NUM_LIGHTS do
-        currentLights[i] = nil
+        currentLights[i] = { enabled = false }
         luvenShader:send("lights[" .. i - 1 .. "]" ..  ".enabled", false)
     end -- for
 end -- function
@@ -320,6 +320,18 @@ function luven.drawEnd()
         luven.camera:unset()
     end -- if
 end -- function
+
+function luven.dispose()
+    for _, v in pairs(currentLights) do
+        if (v.enabled) then
+            luven.removeLight(v.id)
+        end -- if
+    end -- for
+
+    for k, _ in pairs(currentLights) do
+        table.remove(currentLights, k)
+    end -- for
+end -- if
 
 -- ///////////////////////////////////////////////
 -- /// Luven lights functions
@@ -388,6 +400,8 @@ function luven.addFlashingLight(x, y, color, maxPower, speed)
 
     light.enabled = true
 
+    print(light.id)
+
     registerLight(light)
 end -- function
 
@@ -395,7 +409,6 @@ function luven.removeLight(lightId)
     local index = lightId + 1
     currentLights[index].enabled = false
     luvenShader:send(currentLights[index].name .. ".enabled", currentLights[index].enabled)
-    currentLights[index] = nil
 end -- function
 
 function luven.setLightPower(lightId, power)
@@ -423,6 +436,21 @@ function luven.moveLight(lightId, vx, vy)
     currentLights[index].x = currentLights[index].x + vx
     currentLights[index].y = currentLights[index].y + vy
     luvenShader:send(currentLights[index].name .. ".position", { currentLights[index].x, currentLights[index].y })
+end -- function
+
+function luven.getLightPosition(lightId)
+    local index = lightId + 1
+    return currentLights[index].x, currentLights[index].y
+end -- function
+
+function luven.getLightPower(lightId)
+    local index = lightId + 1
+    return currentLights[index].power
+end -- function
+
+function luven.getLightColor(lightId)
+    local index = lightId + 1
+    return currentLights[index].color
 end -- function
 
 return luven
