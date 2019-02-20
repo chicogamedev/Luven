@@ -1,5 +1,5 @@
 local luven = {
-    _VERSION     = 'luven v0.8',
+    _VERSION     = 'luven v0.9',
     _URL         = 'https://github.com/lionelleeser/Luven',
     _DESCRIPTION = 'A minimalitic lighting system for Löve2D',
     _CONTRIBUTORS = 'Lionel Leeser, Pedro Gimeno (Help with shader and camera)',
@@ -27,6 +27,33 @@ local luven = {
         SOFTWARE.
     ]]
 }
+
+-- ///////////////////////////////////////////////
+-- /// Luven error management local functions
+-- ///////////////////////////////////////////////
+
+local function assertPositiveNumber(functionName, parameterName, parameterValue, level)
+    level = level or 3
+    if ((type(parameterValue) ~= "number") or (parameterValue < 0)) then
+        error(functionName .. "\n        parameter : " .. parameterName .. ", expected positive number.", 3)
+    end -- if
+end -- function
+
+local function assertRangeNumber(functionName, parameterName, parameterValue, min, max, level)
+    min = min or 0
+    max = max or 1
+    level = level or 3
+    if ((type(parameterValue) ~= "number") or (parameterValue < min) or (parameterValue > max)) then
+        error(functionName .. "\n        parameter : " .. parameterName .. ", expected range number between " .. min .. " and " .. max .. ".", 3)
+    end -- if
+end -- function
+
+local function assertType(functionName, parameterName, parameterValue, parameterType, level)
+    level = level or 3
+    if (type(parameterValue) ~= parameterType) then
+        error(functionName .. "\n        parameter : " .. parameterName .. ", expected type ".. parameterType .. ".", 3)
+    end -- if
+end -- function
 
 -- ///////////////////////////////////////////////
 -- /// Luven camera
@@ -70,6 +97,9 @@ end -- function
 -- //////////////////////////////
 
 function luven.camera:init(x, y)
+    local functionName = "luven.camera:init(x, y)"
+    assertType(functionName, "x", x, "number")
+    assertType(functionName, "y", y, "number")
     self.transform = love.math.newTransform(x, y)
     self.x = x
     self.y = y
@@ -135,21 +165,27 @@ local shader_code = [[
     const float linear = 0.09;
     const float quadratic = 0.032;
 
+    vec2 norm_pos;
+    vec2 norm_screen;
+    vec3 diffuse;
+    vec4 pixel;
+    float distance;
+    float attenuation;
+
     vec4 effect(vec4 color, Image image, vec2 uvs, vec2 screen_coords){
-        vec4 pixel = Texel(image, uvs);
+        pixel = Texel(image, uvs);
         pixel *= color;
 
-        vec2 norm_screen = screen_coords / screen;
-        vec3 diffuse = ambientLightColor;
+        norm_screen = screen_coords / screen;
+        diffuse = ambientLightColor;
 
         for (int i = 0; i < NUM_LIGHTS; i++) {
             if (lights[i].enabled) {
-                Light light = lights[i];
-                vec2 norm_pos = (viewMatrix * vec4(light.position, 0.0, 1.0)).xy / screen;
-                
-                float distance = length(norm_pos - norm_screen) / (light.power / 1000);
-                float attenuation = 1.0 / (constant + linear * distance + quadratic * (distance * distance));
-                diffuse += light.diffuse * attenuation;
+                norm_pos = (viewMatrix * vec4(lights[i].position, 0.0, 1.0)).xy / screen;
+                    
+                distance = length(norm_pos - norm_screen) / (lights[i].power / 1000);
+                attenuation = 1.0 / (constant + linear * distance + quadratic * (distance * distance));
+                diffuse += lights[i].diffuse * attenuation;
             }
         }
 
@@ -217,12 +253,7 @@ local function getNextId()
         end -- if
     end -- for
 
-    if (getNumberLights() == NUM_LIGHTS) then
-        -- All lights are in use
-        error("Light cannot be created, no more light available!")
-    else
-        return 0 -- first index
-    end -- if
+    return 0 -- first index
 end -- function
 
 local function randomFloat(min, max)
@@ -240,7 +271,8 @@ local function generateFlicker(lightId)
 
     light.flickTimer = randomFloat(light.speedRange.min, light.speedRange.max)
 
-    updateLight(light.id)
+    luvenShader:send(light.name .. ".diffuse", light.color)
+    luvenShader:send(light.name .. ".power", light.power)
 end -- if
 
 -- ///////////////////////////////////////////////
@@ -255,6 +287,11 @@ function luven.init(screenWidth, screenHeight, useCamera)
     else
         useIntegratedCamera = true
     end -- if
+
+    local functionName = "luven.init( [ screenWidth ], [ screenHeight ], [ useCamera ] )"
+    assertPositiveNumber(functionName, "screenWidth", screenWidth)
+    assertPositiveNumber(functionName, "screenHeight", screenHeight)
+    assertType(functionName, "useCamera", useIntegratedCamera, "boolean")
 
     luvenShader = love.graphics.newShader(shader_code)
     luvenShader:send("screen", {
@@ -271,6 +308,14 @@ end -- function
 -- param : color = { r, g, b } (Values between 0 - 1)
 function luven.setAmbientLightColor(color)
     luvenShader:send("ambientLightColor", color)
+end -- function
+
+function luven.getLightCount()
+    return getNumberLights()
+end -- function
+
+function luven.sendCustomViewMatrix(viewMatrix)
+    luvenShader:send("viewMatrix", viewMatrix)
 end -- function
 
 function luven.update(dt)
@@ -297,10 +342,6 @@ function luven.update(dt)
             end -- if
         end -- if
     end -- for
-end -- function
-
-function luven.sendCustomViewMatrix(viewMatrix)
-    luvenShader:send("viewMatrix", viewMatrix)
 end -- function
 
 function luven.drawBegin()
@@ -340,6 +381,14 @@ end -- if
 -- param : color = { r, g, b } (values between 0 - 1)
 -- return : lightId
 function luven.addNormalLight(x, y, color, power)
+    local functionName = "luven.addNormalLight(x, y, color, power)"
+    assertType(functionName, "x", x, "number")
+    assertType(functionName, "y", y, "number")
+    assertRangeNumber(functionName, "color[1]", color[1])
+    assertRangeNumber(functionName, "color[2]", color[2])
+    assertRangeNumber(functionName, "color[3]", color[3])
+    assertPositiveNumber(functionName, "power", power)
+
     local light = {}
 
     light.id = getNextId()
@@ -361,6 +410,20 @@ end -- function
 --          speedRange = { min = n, max = n }
 -- return : lightId
 function luven.addFlickeringLight(x, y, colorRange, powerRange, speedRange)
+    local functionName = "luven.addFlickeringLight(x, y, colorRange, powerRange, speedRange)"
+    assertType(functionName, "x", x, "number")
+    assertType(functionName, "y", y, "number")
+    assertRangeNumber(functionName, "colorRange.min[1]", colorRange.min[1])
+    assertRangeNumber(functionName, "colorRange.min[2]", colorRange.min[2])
+    assertRangeNumber(functionName, "colorRange.min[3]", colorRange.min[3])
+    assertRangeNumber(functionName, "colorRange.max[1]", colorRange.max[1])
+    assertRangeNumber(functionName, "colorRange.max[2]", colorRange.max[2])
+    assertRangeNumber(functionName, "colorRange.max[3]", colorRange.max[3])
+    assertPositiveNumber(functionName, "powerRange.min", powerRange.min)
+    assertPositiveNumber(functionName, "powerRange.max", powerRange.max)
+    assertPositiveNumber(functionName, "speedRange.min", speedRange.min)
+    assertPositiveNumber(functionName, "speedRange.max", speedRange.max)
+    
     local light = {}
 
     light.id = getNextId()
@@ -385,6 +448,15 @@ function luven.addFlickeringLight(x, y, colorRange, powerRange, speedRange)
 end -- function
 
 function luven.addFlashingLight(x, y, color, maxPower, speed)
+    local functionName = "luven.addFlashingLight(x, y, color, maxPower, speed)"
+    assertType(functionName, "x", x, "number")
+    assertType(functionName, "y", y, "number")
+    assertRangeNumber(functionName, "color[1]", color[1])
+    assertRangeNumber(functionName, "color[2]", color[2])
+    assertRangeNumber(functionName, "color[3]", color[3])
+    assertPositiveNumber(functionName, "maxPower", maxPower)
+    assertPositiveNumber(functionName, "speed", speed)
+
     local light = {}
 
     light.id = getNextId()
@@ -399,8 +471,6 @@ function luven.addFlashingLight(x, y, color, maxPower, speed)
     light.timer = 0
 
     light.enabled = true
-
-    print(light.id)
 
     registerLight(light)
 end -- function

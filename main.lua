@@ -9,7 +9,6 @@ local image = nil
 local moveSpeed = 150
 
 local lightId = 0
-local lightId2 = 0
 
 function love.load()
     image = love.graphics.newImage("Background.png")
@@ -20,11 +19,8 @@ function love.load()
     Luven.camera:setScale(zoom)
 
     lightId = Luven.addFlickeringLight(600, 400, { min = { 0.8, 0.0, 0.8 }, max = { 1.0, 0.0, 1.0 } }, { min = 2, max = 3 }, { min = 0.2, max = 0.3 })
-    lightId2 = Luven.addNormalLight(700, 400, {1.0, 1.0, 0.0 }, 10)
+    lightId = Luven.addNormalLight(700, 400, { 1.0, 0.0 , 1.0 }, 10)
 
-    print(Inspect.inspect(Luven.getLightColor(lightId)))
-    print(Luven.getLightPower(lightId))
-    print(Luven.getLightPosition(lightId))
     -- Luven.setLightPower(lightId, 5)
     -- Luven.setLightPower(lightId2, 19)
     -- Luven.setLightColor(lightId, { 1.0, 0.0, 1.0 })
@@ -60,6 +56,10 @@ function love.keypressed(key)
         Luven.camera:setShake(0.7, 5.5)
     end -- if
 
+    if (key == "l") then
+        lightId = Luven.addNormalLight(Luven.camera.x, Luven.camera.y, { 1.0, 1.0 , 1.0 }, 10)
+    end -- if
+
     if (key == "f") then
         Luven.addFlashingLight(Luven.camera.x, Luven.camera.y, { 1.0, 0.0, 0.0 }, 15, 0.05)
     end -- if
@@ -71,6 +71,9 @@ function love.draw()
     love.graphics.draw(image, 0, 0, 0, 0.5, 0.5)
 
     Luven.drawEnd()
+
+    love.graphics.print("Current FPS: " .. tostring(love.timer.getFPS()), 10, 10)
+    --love.graphics.print("Number of lights: " .. tostring(Luven.getLightCount()), 10, 30)
 end -- function
 
 function love.quit()
