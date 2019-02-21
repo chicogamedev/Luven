@@ -1,7 +1,7 @@
 local luven = {
-    _VERSION     = 'luven v0.9',
+    _VERSION     = 'luven v1.0',
     _URL         = 'https://github.com/lionelleeser/Luven',
-    _DESCRIPTION = 'A minimalitic lighting system for Löve2D',
+    _DESCRIPTION = 'A minimalist lighting system for Löve2D',
     _CONTRIBUTORS = 'Lionel Leeser, Pedro Gimeno (Help with shader and camera)',
     _LICENSE     = [[
         MIT License
@@ -209,21 +209,15 @@ local useIntegratedCamera = true
 -- /// Luven utils local functions
 -- ///////////////////////////////////////////////
 
-local function updateLight(lightId)
-    local light = currentLights[lightId + 1]
-
-    luvenShader:send(light.name .. ".position", { light.x , light.y })
-    luvenShader:send(light.name .. ".diffuse", light.color)
-    luvenShader:send(light.name .. ".power", light.power)
-    luvenShader:send(light.name .. ".enabled", light.enabled)
-end -- function
-
 local function registerLight(light)
     light.name = "lights[" .. light.id .."]"
 
     currentLights[light.id + 1] = light
 
-    updateLight(light.id)
+    luvenShader:send(light.name .. ".position", { light.x , light.y })
+    luvenShader:send(light.name .. ".diffuse", light.color)
+    luvenShader:send(light.name .. ".power", light.power)
+    luvenShader:send(light.name .. ".enabled", light.enabled)
 end -- function
 
 local function getNumberLights()
@@ -258,6 +252,10 @@ end -- function
 
 local function randomFloat(min, max)
         return min + love.math.random() * (max - min);
+end -- function
+
+local function clearTable(table)
+    for k, _ in pairs(table) do table[k]=nil end
 end -- function
 
 local function generateFlicker(lightId)
@@ -323,7 +321,8 @@ function luven.update(dt)
         cameraUpdate(dt)
     end -- if
 
-    for _, light in pairs(currentLights) do
+    for i = 1, NUM_LIGHTS do
+        local light = currentLights[i]
         if (light.enabled) then
             if (light.type == lightTypes.flickering) then
                 if (light.flickTimer > 0) then
@@ -369,9 +368,7 @@ function luven.dispose()
         end -- if
     end -- for
 
-    for k, _ in pairs(currentLights) do
-        table.remove(currentLights, k)
-    end -- for
+    clearTable(currentLights)
 end -- if
 
 -- ///////////////////////////////////////////////
@@ -389,9 +386,12 @@ function luven.addNormalLight(x, y, color, power)
     assertRangeNumber(functionName, "color[3]", color[3])
     assertPositiveNumber(functionName, "power", power)
 
-    local light = {}
+    local id = getNextId()
+    local light = currentLights[id + 1]
+    
+    clearTable(light)
 
-    light.id = getNextId()
+    light.id = id
     light.x = x
     light.y = y
     light.color = color
@@ -424,9 +424,12 @@ function luven.addFlickeringLight(x, y, colorRange, powerRange, speedRange)
     assertPositiveNumber(functionName, "speedRange.min", speedRange.min)
     assertPositiveNumber(functionName, "speedRange.max", speedRange.max)
     
-    local light = {}
+    local id = getNextId()
+    local light = currentLights[id + 1]
+    
+    clearTable(light)
 
-    light.id = getNextId()
+    light.id = id
     light.x = x
     light.y = y
     light.color = { 0, 0, 0 }
@@ -457,9 +460,12 @@ function luven.addFlashingLight(x, y, color, maxPower, speed)
     assertPositiveNumber(functionName, "maxPower", maxPower)
     assertPositiveNumber(functionName, "speed", speed)
 
-    local light = {}
+    local id = getNextId()
+    local light = currentLights[id + 1]
+    
+    clearTable(light)
 
-    light.id = getNextId()
+    light.id = id
     light.x = x
     light.y = y
     light.color = color
