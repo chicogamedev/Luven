@@ -308,10 +308,6 @@ function luven.setAmbientLightColor(color)
     luvenShader:send("ambientLightColor", color)
 end -- function
 
-function luven.getLightCount()
-    return getNumberLights()
-end -- function
-
 function luven.sendCustomViewMatrix(viewMatrix)
     luvenShader:send("viewMatrix", viewMatrix)
 end -- function
@@ -370,6 +366,10 @@ function luven.dispose()
 
     clearTable(currentLights)
 end -- if
+
+function luven.getLightCount()
+    return getNumberLights()
+end -- function
 
 -- ///////////////////////////////////////////////
 -- /// Luven lights functions
@@ -507,10 +507,10 @@ function luven.setLightPosition(lightId, x, y)
     luvenShader:send(currentLights[index].name .. ".position", { currentLights[index].x, currentLights[index].y })
 end -- function
 
-function luven.moveLight(lightId, vx, vy)
+function luven.moveLight(lightId, dx, dy)
     local index = lightId + 1
-    currentLights[index].x = currentLights[index].x + vx
-    currentLights[index].y = currentLights[index].y + vy
+    currentLights[index].x = currentLights[index].x + dx
+    currentLights[index].y = currentLights[index].y + dy
     luvenShader:send(currentLights[index].name .. ".position", { currentLights[index].x, currentLights[index].y })
 end -- function
 
