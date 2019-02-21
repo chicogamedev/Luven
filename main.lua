@@ -20,11 +20,6 @@ function love.load()
 
     lightId = Luven.addFlickeringLight(600, 400, { min = { 0.8, 0.0, 0.8 }, max = { 1.0, 0.0, 1.0 } }, { min = 2, max = 3 }, { min = 0.2, max = 0.3 })
     lightId = Luven.addNormalLight(700, 400, { 1.0, 0.0 , 1.0 }, 10)
-
-    -- Luven.setLightPower(lightId, 5)
-    -- Luven.setLightPower(lightId2, 19)
-    -- Luven.setLightColor(lightId, { 1.0, 0.0, 1.0 })
-    -- Luven.removeLight(light)
 end -- function
 
 function love.update(dt)
