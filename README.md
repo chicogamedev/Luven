@@ -1,10 +1,11 @@
 # Luven
-Minimalistic lighting system for [Löve2D](https://love2d.org/)
+Minimalist lighting system for [Löve2D](https://love2d.org/)
 
 # Luven's Public Trello
 https://trello.com/b/4kLFwfyV
 
 # Luven's Wiki
+https://github.com/lionelleeser/Luven/wiki/
 
 # Luven's License
 MIT License
