@@ -7,7 +7,7 @@ Minimalist lighting system for [Löve2D](https://love2d.org/)
 https://trello.com/b/4kLFwfyV
 
 # Luven's Wiki
-https://github.com/lionelleeser/Luven/wiki/
+https://github.com/chicogamedev/Luven/wiki
 
 # Luven's License
 MIT License
