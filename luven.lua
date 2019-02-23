@@ -151,7 +151,6 @@ local shader_code = [[
         vec2 position;
         vec3 diffuse;
         float power;
-        bool enabled;
     };
 
     extern Light lights[NUM_LIGHTS];
@@ -161,32 +160,27 @@ local shader_code = [[
 
     extern mat4 viewMatrix;
 
+    extern int lightsCount;
+
     const float constant = 1.0;
     const float linear = 0.09;
     const float quadratic = 0.032;
 
-    vec2 norm_pos;
-    vec2 norm_screen;
     vec3 diffuse;
-    vec4 pixel;
-    float distance;
-    float attenuation;
 
     vec4 effect(vec4 color, Image image, vec2 uvs, vec2 screen_coords){
-        pixel = Texel(image, uvs);
-        pixel *= color;
+        vec4 pixel = Texel(image, uvs) * color;
 
-        norm_screen = screen_coords / screen;
+        vec2 norm_screen = screen_coords / screen;
+
         diffuse = ambientLightColor;
 
-        for (int i = 0; i < NUM_LIGHTS; i++) {
-            if (lights[i].enabled) {
-                norm_pos = (viewMatrix * vec4(lights[i].position, 0.0, 1.0)).xy / screen;
-                    
-                distance = length(norm_pos - norm_screen) / (lights[i].power / 1000);
-                attenuation = 1.0 / (constant + linear * distance + quadratic * (distance * distance));
-                diffuse += lights[i].diffuse * attenuation;
-            }
+        for (int i = 0; i < lightsCount; i++) {
+            vec2 norm_pos = (viewMatrix * vec4(lights[i].position, 0.0, 1.0)).xy / screen;
+                
+            float distance = length(norm_pos - norm_screen) / (lights[i].power / 1000);
+            float attenuation = 1.0 / (constant + linear * distance + quadratic * (distance * distance));
+            diffuse += lights[i].diffuse * attenuation;
         }
 
         diffuse = clamp(diffuse, 0.0, 1.0);
@@ -202,6 +196,7 @@ local lightTypes = {
 }
 
 local currentLights = {}
+local lightsCount = 0
 local luvenShader = nil
 local useIntegratedCamera = true
 
@@ -217,22 +212,10 @@ local function registerLight(light)
     luvenShader:send(light.name .. ".position", { light.x , light.y })
     luvenShader:send(light.name .. ".diffuse", light.color)
     luvenShader:send(light.name .. ".power", light.power)
-    luvenShader:send(light.name .. ".enabled", light.enabled)
-end -- function
 
-local function getNumberLights()
-    local count = 0
+    lightsCount = lightsCount + 1
 
-    for i = 1, NUM_LIGHTS do
-        local currentLight = currentLights[i]
-        if (currentLight ~= nil) then
-            if (currentLight.enabled) then
-                count = count + 1
-            end -- if
-        end -- if
-    end -- for
-
-    return count
+    luvenShader:send("lightsCount", lightsCount)
 end -- function
 
 local function getNextId()
@@ -297,9 +280,10 @@ function luven.init(screenWidth, screenHeight, useCamera)
         screenHeight
     })
 
+    luvenShader:send("lightsCount", lightsCount)
+
     for i = 1, NUM_LIGHTS do
         currentLights[i] = { enabled = false }
-        luvenShader:send("lights[" .. i - 1 .. "]" ..  ".enabled", false)
     end -- for
 end -- function
 
@@ -317,7 +301,7 @@ function luven.update(dt)
         cameraUpdate(dt)
     end -- if
 
-    for i = 1, NUM_LIGHTS do
+    for i = 1, lightsCount do
         local light = currentLights[i]
         if (light.enabled) then
             if (light.type == lightTypes.flickering) then
@@ -343,7 +327,7 @@ function luven.drawBegin()
     if (useIntegratedCamera) then
         cameraDraw()
         luven.camera:set()
-        luven.sendCustomViewMatrix({ cameraGetViewMatrix() })
+        luvenShader:send("viewMatrix", { cameraGetViewMatrix() })
     end -- if
     
     love.graphics.setShader(luvenShader)
@@ -368,7 +352,7 @@ function luven.dispose()
 end -- if
 
 function luven.getLightCount()
-    return getNumberLights()
+    return lightsCount
 end -- function
 
 -- ///////////////////////////////////////////////
@@ -484,7 +468,10 @@ end -- function
 function luven.removeLight(lightId)
     local index = lightId + 1
     currentLights[index].enabled = false
-    luvenShader:send(currentLights[index].name .. ".enabled", currentLights[index].enabled)
+
+    lightsCount = lightsCount - 1
+
+    luvenShader:send("lightsCount", lightsCount)
 end -- function
 
 function luven.setLightPower(lightId, power)
