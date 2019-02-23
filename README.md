@@ -1,3 +1,5 @@
+![Logo](https://trello-attachments.s3.amazonaws.com/5c62603f5b806120c3c217de/5c62fa9f44ac736dfc066527/48f2b7d27aa68a559e28ab5ebe00e0ee/Luven_logo_complete.PNG)
+
 # Luven
 ![Image of Luven in Battle Mage Dungeon Rush](https://trello-attachments.s3.amazonaws.com/5c62603f5b806120c3c217de/5c62fa9f44ac736dfc066527/75e221b27cc2abad5fad7b36a3a78725/BMDR_ScreenShot_for_Luven.png)
 
