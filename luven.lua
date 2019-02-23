@@ -1,5 +1,5 @@
 local luven = {
-    _VERSION     = 'Luven v1.0',
+    _VERSION     = 'Luven v1.01',
     _URL         = 'https://github.com/lionelleeser/Luven',
     _DESCRIPTION = 'A minimalist lighting system for Löve2D',
     _CONTRIBUTORS = 'Lionel Leeser, Pedro Gimeno (Help with shader and camera)',
@@ -143,9 +143,9 @@ end -- function
 -- /// Luven variables declarations
 -- ///////////////////////////////////////////////
 
-local NUM_LIGHTS = 64
+local NUM_LIGHTS = 32
 local shader_code = [[
-    #define NUM_LIGHTS 64
+    #define NUM_LIGHTS 32
 
     struct Light {
         vec2 position;
