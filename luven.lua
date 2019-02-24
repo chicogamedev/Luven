@@ -1,5 +1,5 @@
 local luven = {
-    _VERSION     = 'Luven v1.02 exp.',
+    _VERSION     = 'Luven v1.021 exp.',
     _URL         = 'https://github.com/lionelleeser/Luven',
     _DESCRIPTION = 'A minimalist lighting system for Löve2D',
     _CONTRIBUTORS = 'Lionel Leeser, Pedro Gimeno (Help with shader and camera)',
@@ -192,7 +192,7 @@ local function drawLights()
     for i = 1, lastActiveLightIndex do
         if (currentLights[i].enabled) then
             love.graphics.setColor(currentLights[i].color)
-            love.graphics.draw(currentLights[i].sprite, currentLights[i].x - ((256 * currentLights[i].power) / 2), currentLights[i].y - ((256 * currentLights[i].power) / 2), 0, 1 * currentLights[i].power, 1 * currentLights[i].power)
+            love.graphics.draw(currentLights[i].sprite, currentLights[i].x, currentLights[i].y, 0, 1 * currentLights[i].power, 1 * currentLights[i].power, currentLights[i].sprite:getWidth() / 2, currentLights[i].sprite:getHeight() / 2)
         end -- if
     end -- for
 

@@ -3,6 +3,7 @@
 
 Luven = require "luven"
 Inspect = require "dev/inspect"
+Profi = require "dev/profi"
 
 local zoom = 2
 local image = nil
@@ -13,6 +14,7 @@ local lightId = 0
 local power = 0.25
 
 function love.load()
+    Profi:start()
     image = love.graphics.newImage("Background.png")
 
     Luven.init()
@@ -85,4 +87,6 @@ end -- function
 
 function love.quit()
     Luven.dispose()
+    Profi:stop()
+	Profi:writeReport("LuvenProfile.txt")
 end -- function
