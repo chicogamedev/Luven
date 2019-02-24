@@ -1,5 +1,5 @@
 local luven = {
-    _VERSION     = 'Luven v1.01',
+    _VERSION     = 'Luven v1.01 exp.',
     _URL         = 'https://github.com/lionelleeser/Luven',
     _DESCRIPTION = 'A minimalist lighting system for Löve2D',
     _CONTRIBUTORS = 'Lionel Leeser, Pedro Gimeno (Help with shader and camera)',
@@ -144,50 +144,6 @@ end -- function
 -- ///////////////////////////////////////////////
 
 local NUM_LIGHTS = 32
-local shader_code = [[
-    #define NUM_LIGHTS 32
-
-    struct Light {
-        vec2 position;
-        vec3 diffuse;
-        float power;
-    };
-
-    extern Light lights[NUM_LIGHTS];
-
-    extern vec2 screen;
-    extern vec3 ambientLightColor = vec3(0);
-
-    extern mat4 viewMatrix;
-
-    extern int lightsCount;
-
-    const float constant = 1.0;
-    const float linear = 0.09;
-    const float quadratic = 0.032;
-
-    vec3 diffuse;
-
-    vec4 effect(vec4 color, Image image, vec2 uvs, vec2 screen_coords){
-        vec4 pixel = Texel(image, uvs) * color;
-
-        vec2 norm_screen = screen_coords / screen;
-
-        diffuse = ambientLightColor;
-
-        for (int i = 0; i < lightsCount; i++) {
-            vec2 norm_pos = (viewMatrix * vec4(lights[i].position, 0.0, 1.0)).xy / screen;
-                
-            float distance = length(norm_pos - norm_screen) / (lights[i].power / 1000);
-            float attenuation = 1.0 / (constant + linear * distance + quadratic * (distance * distance));
-            diffuse += lights[i].diffuse * attenuation;
-        }
-
-        diffuse = clamp(diffuse, 0.0, 1.0);
-
-        return pixel * vec4(diffuse, 1.0);
-    }
-]]
 
 local lightTypes = {
     normal = 0,
@@ -213,7 +169,9 @@ local function registerLight(light)
     luvenShader:send(light.name .. ".diffuse", light.color)
     luvenShader:send(light.name .. ".power", light.power)
 
-    lightsCount = lightsCount + 1
+    if (lightsCount < NUM_LIGHTS) then
+        lightsCount = lightsCount + 1
+    end -- if
 
     luvenShader:send("lightsCount", lightsCount)
 end -- function
@@ -274,7 +232,7 @@ function luven.init(screenWidth, screenHeight, useCamera)
     assertPositiveNumber(functionName, "screenHeight", screenHeight)
     assertType(functionName, "useCamera", useIntegratedCamera, "boolean")
 
-    luvenShader = love.graphics.newShader(shader_code)
+    luvenShader = love.graphics.newShader("shaders/pixel.glsl", "shaders/vertex.glsl")
     luvenShader:send("screen", {
         screenWidth,
         screenHeight
