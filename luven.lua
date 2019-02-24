@@ -232,7 +232,7 @@ function luven.init(screenWidth, screenHeight, useCamera)
     assertPositiveNumber(functionName, "screenHeight", screenHeight)
     assertType(functionName, "useCamera", useIntegratedCamera, "boolean")
 
-    luvenShader = love.graphics.newShader("shaders/pixel.glsl", "shaders/vertex.glsl")
+    luvenShader = love.graphics.newShader("shaders/pixel.glsl")
     luvenShader:send("screen", {
         screenWidth,
         screenHeight
