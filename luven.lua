@@ -1,5 +1,5 @@
 local luven = {
-    _VERSION     = 'Luven v1.01 exp.',
+    _VERSION     = 'Luven v1.02 exp.',
     _URL         = 'https://github.com/lionelleeser/Luven',
     _DESCRIPTION = 'A minimalist lighting system for Löve2D',
     _CONTRIBUTORS = 'Lionel Leeser, Pedro Gimeno (Help with shader and camera)',
@@ -143,7 +143,7 @@ end -- function
 -- /// Luven variables declarations
 -- ///////////////////////////////////////////////
 
-local NUM_LIGHTS = 32
+local NUM_LIGHTS = 500
 
 local lightTypes = {
     normal = 0,
@@ -152,47 +152,67 @@ local lightTypes = {
 }
 
 local currentLights = {}
-local lightsCount = 0
-local luvenShader = nil
 local useIntegratedCamera = true
+
+local ambientLightColor = { 0, 0, 0, 1 }
+
+local lastActiveLightIndex = 0
+
+local lightMap = nil
+
+-- ///////////////////////////////////////////////
+-- /// Luven helper enums
+-- ///////////////////////////////////////////////
+
+luven.lightShapes = {
+    round = "round"
+}
 
 -- ///////////////////////////////////////////////
 -- /// Luven utils local functions
 -- ///////////////////////////////////////////////
 
-local function registerLight(light)
-    light.name = "lights[" .. light.id .."]"
+local function getLastEnabledLightIndex()
+    for i = NUM_LIGHTS, 1, -1 do
+        if (currentLights[i].enabled) then
+            return i
+        end -- if
+    end -- for
+end -- function
 
-    currentLights[light.id + 1] = light
+local function drawLights()
+    love.graphics.setCanvas(lightMap)
+    love.graphics.setBlendMode("add")
 
-    luvenShader:send(light.name .. ".position", { light.x , light.y })
-    luvenShader:send(light.name .. ".diffuse", light.color)
-    luvenShader:send(light.name .. ".power", light.power)
+    love.graphics.clear(ambientLightColor) -- ambientLightColor
 
-    if (lightsCount < NUM_LIGHTS) then
-        lightsCount = lightsCount + 1
-    end -- if
+    local oldR, oldG, oldB, oldA = love.graphics.getColor()
 
-    luvenShader:send("lightsCount", lightsCount)
+    -- lastActiveLightIndex updated in luven.update()
+    for i = 1, lastActiveLightIndex do
+        if (currentLights[i].enabled) then
+            love.graphics.setColor(currentLights[i].color)
+            love.graphics.draw(currentLights[i].sprite, currentLights[i].x - ((256 * currentLights[i].power) / 2), currentLights[i].y - ((256 * currentLights[i].power) / 2), 0, 1 * currentLights[i].power, 1 * currentLights[i].power)
+        end -- if
+    end -- for
+
+    love.graphics.setColor(oldR, oldG, oldB, oldA)
+
+    love.graphics.setCanvas()
 end -- function
 
 local function getNextId()
     for i = 1, NUM_LIGHTS do
-        local currentLight = currentLights[i]
-        if (currentLight ~= nil) then
-            if (currentLight.enabled == false) then
-                return i - 1 
-            end -- if
-        else
-            return i - 1
+        if (currentLights[i].enabled == false) then
+            return i
         end -- if
     end -- for
 
-    return 0 -- first index
+    return 1 -- first index
 end -- function
 
 local function randomFloat(min, max)
-        return min + love.math.random() * (max - min);
+        return min + love.math.random() * (max - min)
 end -- function
 
 local function clearTable(table)
@@ -200,7 +220,7 @@ local function clearTable(table)
 end -- function
 
 local function generateFlicker(lightId)
-    local light = currentLights[lightId + 1]
+    local light = currentLights[lightId]
 
     light.color[1] = randomFloat(light.colorRange.min[1], light.colorRange.max[1])
     light.color[2] = randomFloat(light.colorRange.min[2], light.colorRange.max[2])
@@ -209,9 +229,6 @@ local function generateFlicker(lightId)
     light.power = randomFloat(light.powerRange.min, light.powerRange.max)
 
     light.flickTimer = randomFloat(light.speedRange.min, light.speedRange.max)
-
-    luvenShader:send(light.name .. ".diffuse", light.color)
-    luvenShader:send(light.name .. ".power", light.power)
 end -- if
 
 -- ///////////////////////////////////////////////
@@ -232,26 +249,21 @@ function luven.init(screenWidth, screenHeight, useCamera)
     assertPositiveNumber(functionName, "screenHeight", screenHeight)
     assertType(functionName, "useCamera", useIntegratedCamera, "boolean")
 
-    luvenShader = love.graphics.newShader("shaders/pixel.glsl")
-    luvenShader:send("screen", {
-        screenWidth,
-        screenHeight
-    })
-
-    luvenShader:send("lightsCount", lightsCount)
+    lightMap = love.graphics.newCanvas(screenWidth, screenHeight)
 
     for i = 1, NUM_LIGHTS do
         currentLights[i] = { enabled = false }
     end -- for
 end -- function
 
--- param : color = { r, g, b } (Values between 0 - 1)
+-- param : color = { r, g, b, a (1) } (Values between 0 - 1)
 function luven.setAmbientLightColor(color)
-    luvenShader:send("ambientLightColor", color)
+    color[4] = color[4] or 1
+    ambientLightColor = color
 end -- function
 
 function luven.sendCustomViewMatrix(viewMatrix)
-    luvenShader:send("viewMatrix", viewMatrix)
+    error("luven.sendCustomViewMatrix : Not implemented anymore. Stop use it.")
 end -- function
 
 function luven.update(dt)
@@ -259,7 +271,9 @@ function luven.update(dt)
         cameraUpdate(dt)
     end -- if
 
-    for i = 1, lightsCount do
+    lastActiveLightIndex = getLastEnabledLightIndex()
+
+    for i = 1, lastActiveLightIndex do
         local light = currentLights[i]
         if (light.enabled) then
             if (light.type == lightTypes.flickering) then
@@ -272,7 +286,6 @@ function luven.update(dt)
                 light.timer = light.timer + dt
                 if (light.power < light.maxPower) then
                     light.power = (light.maxPower * light.timer) / light.speed
-                    luvenShader:send(light.name .. ".power", light.power)
                 else
                     luven.removeLight(light.id)
                 end -- if
@@ -285,18 +298,19 @@ function luven.drawBegin()
     if (useIntegratedCamera) then
         cameraDraw()
         luven.camera:set()
-        luvenShader:send("viewMatrix", { cameraGetViewMatrix() })
     end -- if
-    
-    love.graphics.setShader(luvenShader)
+
+    drawLights()
 end -- function
 
 function luven.drawEnd()
-    love.graphics.setShader()
-
     if (useIntegratedCamera) then
         luven.camera:unset()
     end -- if
+
+    love.graphics.setBlendMode("multiply", "premultiplied")
+    love.graphics.draw(lightMap)
+    love.graphics.setBlendMode("alpha")
 end -- function
 
 function luven.dispose()
@@ -310,7 +324,15 @@ function luven.dispose()
 end -- if
 
 function luven.getLightCount()
-    return lightsCount
+    local count = 0
+
+    for i = 1, lastActiveLightIndex do
+        if (currentLights[i].enabled) then
+            count = count + 1
+        end -- if
+    end -- for
+
+    return count
 end -- function
 
 -- ///////////////////////////////////////////////
@@ -329,7 +351,7 @@ function luven.addNormalLight(x, y, color, power)
     assertPositiveNumber(functionName, "power", power)
 
     local id = getNextId()
-    local light = currentLights[id + 1]
+    local light = currentLights[id]
     
     clearTable(light)
 
@@ -339,10 +361,9 @@ function luven.addNormalLight(x, y, color, power)
     light.color = color
     light.power = power
     light.type = lightTypes.normal
+    light.sprite = love.graphics.newImage("lightsSpritesheets/RoundLight.png")
 
     light.enabled = true
-
-    registerLight(light)
 
     return light.id
 end -- function
@@ -367,7 +388,7 @@ function luven.addFlickeringLight(x, y, colorRange, powerRange, speedRange)
     assertPositiveNumber(functionName, "speedRange.max", speedRange.max)
     
     local id = getNextId()
-    local light = currentLights[id + 1]
+    local light = currentLights[id]
     
     clearTable(light)
 
@@ -377,6 +398,7 @@ function luven.addFlickeringLight(x, y, colorRange, powerRange, speedRange)
     light.color = { 0, 0, 0 }
     light.power = 0
     light.type = lightTypes.flickering
+    light.sprite = love.graphics.newImage("lightsSpritesheets/RoundLight.png")
 
     light.flickTimer = 0
     light.colorRange = colorRange
@@ -384,8 +406,6 @@ function luven.addFlickeringLight(x, y, colorRange, powerRange, speedRange)
     light.speedRange = speedRange
 
     light.enabled = true
-
-    registerLight(light)
 
     generateFlicker(light.id)
 
@@ -403,8 +423,7 @@ function luven.addFlashingLight(x, y, color, maxPower, speed)
     assertPositiveNumber(functionName, "speed", speed)
 
     local id = getNextId()
-    local light = currentLights[id + 1]
-    
+    local light = currentLights[id]
     clearTable(light)
 
     light.id = id
@@ -413,65 +432,48 @@ function luven.addFlashingLight(x, y, color, maxPower, speed)
     light.color = color
     light.power = 0
     light.type = lightTypes.flashing
+    light.sprite = love.graphics.newImage("lightsSpritesheets/RoundLight.png")
     
     light.maxPower = maxPower
     light.speed = speed
     light.timer = 0
 
     light.enabled = true
-
-    registerLight(light)
 end -- function
 
 function luven.removeLight(lightId)
-    local index = lightId + 1
-    currentLights[index].enabled = false
-
-    lightsCount = lightsCount - 1
-
-    luvenShader:send("lightsCount", lightsCount)
+    currentLights[lightId].enabled = false
 end -- function
 
 function luven.setLightPower(lightId, power)
-    local index = lightId + 1
-    currentLights[index].power = power
-    luvenShader:send(currentLights[index].name .. ".power", currentLights[index].power)
+    currentLights[lightId].power = power
 end -- function
 
 -- param : color = { r, g, b } (values between 0 - 1)
 function luven.setLightColor(lightId, color)
-    local index = lightId + 1
-    currentLights[index].color = color
-    luvenShader:send(currentLights[index].name .. ".diffuse", currentLights[index].color)
+    currentLights[lightId].color = color
 end -- function
 
 function luven.setLightPosition(lightId, x, y)
-    local index = lightId + 1
-    currentLights[index].x = x
-    currentLights[index].y = y
-    luvenShader:send(currentLights[index].name .. ".position", { currentLights[index].x, currentLights[index].y })
+    currentLights[lightId].x = x
+    currentLights[lightId].y = y
 end -- function
 
 function luven.moveLight(lightId, dx, dy)
-    local index = lightId + 1
-    currentLights[index].x = currentLights[index].x + dx
-    currentLights[index].y = currentLights[index].y + dy
-    luvenShader:send(currentLights[index].name .. ".position", { currentLights[index].x, currentLights[index].y })
+    currentLights[lightId].x = currentLights[index].x + dx
+    currentLights[lightId].y = currentLights[index].y + dy
 end -- function
 
 function luven.getLightPosition(lightId)
-    local index = lightId + 1
-    return currentLights[index].x, currentLights[index].y
+    return currentLights[lightId].x, currentLights[lightId].y
 end -- function
 
 function luven.getLightPower(lightId)
-    local index = lightId + 1
-    return currentLights[index].power
+    return currentLights[lightId].power
 end -- function
 
 function luven.getLightColor(lightId)
-    local index = lightId + 1
-    return currentLights[index].color
+    return currentLights[lightId].color
 end -- function
 
 return luven
