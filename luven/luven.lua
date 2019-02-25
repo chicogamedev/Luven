@@ -1,5 +1,5 @@
 local luven = {
-    _VERSION     = 'Luven v1.021 exp.',
+    _VERSION     = 'Luven v1.022 exp.',
     _URL         = 'https://github.com/lionelleeser/Luven',
     _DESCRIPTION = 'A minimalist lighting system for Löve2D',
     _CONTRIBUTORS = 'Lionel Leeser, Pedro Gimeno (Help with shader and camera)',
@@ -145,6 +145,9 @@ end -- function
 
 local NUM_LIGHTS = 500
 
+local luvenPath = debug.getinfo(1,'S').source -- get Luven path
+luvenPath = string.sub(luvenPath, 2, string.len(luvenPath) - 9) -- 9 = luven.lua
+
 local lightTypes = {
     normal = 0,
     flickering = 1,
@@ -197,6 +200,8 @@ local function drawLights()
     end -- for
 
     love.graphics.setColor(oldR, oldG, oldB, oldA)
+
+    love.graphics.setBlendMode("alpha")
 
     love.graphics.setCanvas()
 end -- function
@@ -361,7 +366,7 @@ function luven.addNormalLight(x, y, color, power)
     light.color = color
     light.power = power
     light.type = lightTypes.normal
-    light.sprite = love.graphics.newImage("lightsSpritesheets/RoundLight.png")
+    light.sprite = love.graphics.newImage(luvenPath .. "lightsSpritesheets/RoundLight.png")
 
     light.enabled = true
 
@@ -398,7 +403,7 @@ function luven.addFlickeringLight(x, y, colorRange, powerRange, speedRange)
     light.color = { 0, 0, 0 }
     light.power = 0
     light.type = lightTypes.flickering
-    light.sprite = love.graphics.newImage("lightsSpritesheets/RoundLight.png")
+    light.sprite = love.graphics.newImage(luvenPath .. "lightsSpritesheets/RoundLight.png")
 
     light.flickTimer = 0
     light.colorRange = colorRange
@@ -432,7 +437,7 @@ function luven.addFlashingLight(x, y, color, maxPower, speed)
     light.color = color
     light.power = 0
     light.type = lightTypes.flashing
-    light.sprite = love.graphics.newImage("lightsSpritesheets/RoundLight.png")
+    light.sprite = love.graphics.newImage(luvenPath .. "lightsSpritesheets/RoundLight.png")
     
     light.maxPower = maxPower
     light.speed = speed

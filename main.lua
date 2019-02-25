@@ -1,7 +1,7 @@
 -- main.lua
 -- Example for using luven.lua
 
-Luven = require "luven"
+Luven = require "luven/luven"
 Inspect = require "dev/inspect"
 Profi = require "dev/profi"
 
