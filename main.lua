@@ -10,6 +10,7 @@ local image = nil
 local moveSpeed = 150
 
 local lightId = 0
+local lightId2 = 0
 
 local power = 0.25
 
@@ -23,7 +24,7 @@ function love.load()
     Luven.camera:setScale(zoom)
 
     lightId = Luven.addFlickeringLight(600, 400, { min = { 0.8, 0.0, 0.8, 0.8 }, max = { 1.0, 0.0, 1.0, 1.0 } }, { min = 0.25, max = 0.27 }, { min = 0.12, max = 0.2 })
-    lightId = Luven.addNormalLight(700, 400, { 1.0, 0.0 , 1.0, 1.0 }, power, Luven.lightShapes.round, 0.5, 1.2)
+    lightId2 = Luven.addNormalLight(700, 400, { 1.0, 0.0 , 1.0, 1.0 }, power, Luven.lightShapes.cone, 0.5, 5)
 end -- function
 
 function love.update(dt)
@@ -48,6 +49,8 @@ function love.update(dt)
     end -- if
 
     Luven.camera:move(vx, vy)
+
+    Luven.setLightRotation(lightId2, Luven.getLightRotation(lightId2) + 1 * dt)
 end -- function
 
 function love.keypressed(key)
