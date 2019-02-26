@@ -1,5 +1,5 @@
 local luven = {
-    _VERSION     = 'Luven v1.023 exp.',
+    _VERSION     = 'Luven v1.024 exp. WIP',
     _URL         = 'https://github.com/lionelleeser/Luven',
     _DESCRIPTION = 'A minimalist lighting system for Löve2D',
     _CONTRIBUTORS = 'Lionel Leeser, Pedro Gimeno (Help with shader and camera)',
@@ -145,6 +145,8 @@ end -- function
 
 local NUM_LIGHTS = 500
 
+local lightsSize = 256
+
 local luvenPath = debug.getinfo(1,'S').source -- get Luven path
 luvenPath = string.sub(luvenPath, 2, string.len(luvenPath) - 9) -- 9 = luven.lua
 
@@ -164,14 +166,10 @@ local lastActiveLightIndex = 0
 local lightMap = nil
 
 -- ///////////////////////////////////////////////
--- /// Luven helper enums
+-- /// Luven light shapes
 -- ///////////////////////////////////////////////
 
-luven.lightShapes = {
-    round = nil,
-    rectangle = nil,
-    cone = nil
-}
+luven.lightShapes = {}
 
 -- ///////////////////////////////////////////////
 -- /// Luven utils local functions
@@ -256,8 +254,9 @@ function luven.init(screenWidth, screenHeight, useCamera)
     assertPositiveNumber(functionName, "screenHeight", screenHeight)
     assertType(functionName, "useCamera", useIntegratedCamera, "boolean")
 
-    luven.lightShapes.round = love.graphics.newImage(luvenPath .. "lights/round.png")
-    luven.lightShapes.rectangle = love.graphics.newImage(luvenPath .. "lights/rectangle.png")
+    luven.registerLightShape("round", luvenPath .. "lights/round.png")
+    luven.registerLightShape("rectangle", luvenPath .. "lights/rectangle.png")
+    luven.registerLightShape("cone", luvenPath .. "lights/cone.png", 0, lightsSize / 2)
 
     lightMap = love.graphics.newCanvas(screenWidth, screenHeight)
 
@@ -270,6 +269,14 @@ end -- function
 function luven.setAmbientLightColor(color)
     color[4] = color[4] or 1
     ambientLightColor = color
+end -- function
+
+function luven.registerLightShape(name, spritePath, originX, originY)
+    luven.lightShapes[name] = {
+        sprite = love.graphics.newImage(spritePath),
+        originX = originX or lightsSize / 2,
+        originY = originY or originX
+    }
 end -- function
 
 function luven.sendCustomViewMatrix(viewMatrix)
