@@ -1,99 +1,100 @@
 ###############################################################################################################
-#####  ProFi, a lua profiler. This profile was generated on: Mar 26 fév 07:20:01 2019
+#####  ProFi, a lua profiler. This profile was generated on: Mar 26 fév 18:08:31 2019
 #####  ProFi is created by Luke Perkin 2012 under the MIT Licence, www.locofilm.co.uk
 #####  Version 1.3. Get the most recent version at this gist: https://gist.github.com/2838755
 ###############################################################################################################
 
-| TOTAL TIME = 12,127864
+| TOTAL TIME = 60,178854
 | FILE                                              : FUNCTION                                : LINE                : TIME        : RELATIVE    : CALLED      |
-| [string "boot.lua"]                               : anonymous                               :  493                : 11,729      : 96,71%      :    8705     |
-| main.lua                                          : draw                                    :   80                : 4,495       : 37,07%      :    8704     |
-| luven/luven.lua                                   : drawBegin                               :  344                : 3,636       : 29,98%      :    8704     |
-| luven/luven.lua                                   : drawLights                              :  210                : 3,248       : 26,78%      :    8704     |
-| luven/luven.lua                                   : calculateLightOrigin                    :  178                : 1,295       : 10,68%      :  114317     |
-| main.lua                                          : update                                  :   30                : 0,693       : 5,72%       :    8704     |
-| luven/luven.lua                                   : drawEnd                                 :  353                : 0,354       : 2,92%       :    8704     |
-| luven/luven.lua                                   : update                                  :  316                : 0,245       : 2,02%       :    8704     |
-| luven/luven.lua                                   : set                                     :  108                : 0,219       : 1,81%       :    8704     |
-| luven/luven.lua                                   : unset                                   :  114                : 0,068       : 0,56%       :    8704     |
-| luven/luven.lua                                   : getLastEnabledLightIndex                :  202                : 0,064       : 0,53%       :    8704     |
-| [string "wrap_Event.lua"]                         : poll                                    :   25                : 0,044       : 0,36%       :    8705     |
-| luven/luven.lua                                   : getLightCount                           :  373                : 0,038       : 0,32%       :    8704     |
-| luven/luven.lua                                   : cameraUpdate                            :   77                : 0,037       : 0,30%       :    8704     |
-| luven/luven.lua                                   : getLightRotation                        :  566                : 0,035       : 0,29%       :    8704     |
-| luven/luven.lua                                   : move                                    :  123                : 0,034       : 0,28%       :    8704     |
-| luven/luven.lua                                   : setLightRotation                        :  545                : 0,034       : 0,28%       :    8704     |
-| luven/luven.lua                                   : cameraDraw                              :   83                : 0,034       : 0,28%       :    8704     |
-| luven/luven.lua                                   : generateFlicker                         :  253                : 0,027       : 0,22%       :     144     |
-| luven/luven.lua                                   : randomFloat                             :  245                : 0,024       : 0,19%       :     720     |
-| luven/luven.lua                                   : init                                    :  269                : 0,007       : 0,06%       :       1     |
-| luven/luven.lua                                   : registerLightShape                      :  301                : 0,007       : 0,06%       :       3     |
-| main.lua                                          : anonymous                               :   56                : 0,006       : 0,05%       :      98     |
-| luven/luven.lua                                   : addNormalLight                          :  391                : 0,005       : 0,04%       :      29     |
-| [string "wrap_RandomGenerator.lua"]               : random                                  :   33                : 0,003       : 0,02%       :     720     |
-| luven/luven.lua                                   : addFlickeringLight                      :  434                : 0,001       : 0,01%       :       1     |
-| luven/luven.lua                                   : assertType                              :   51                : 0,001       : 0,01%       :      93     |
-| luven/luven.lua                                   : assertRangeNumber                       :   42                : 0,001       : 0,01%       :      93     |
-| luven/luven.lua                                   : assertPositiveNumber                    :   35                : 0,001       : 0,01%       :      95     |
-| [string "boot.lua"]                               : anonymous                               :  149                : 0,001       : 0,00%       :      96     |
-| luven/luven.lua                                   : dispose                                 :  363                : 0,001       : 0,00%       :       1     |
-| [string "boot.lua"]                               : anonymous                               :  152                : 0,001       : 0,00%       :      96     |
-| luven/luven.lua                                   : removeLight                             :  527                : 0,000       : 0,00%       :      30     |
-| luven/luven.lua                                   : clearTable                              :  249                : 0,000       : 0,00%       :      31     |
-| luven/luven.lua                                   : getNextId                               :  235                : 0,000       : 0,00%       :      30     |
-| luven/luven.lua                                   : setLightPower                           :  531                : 0,000       : 0,00%       :      55     |
+| [string "boot.lua"]                               : anonymous                               :  493                : 59,494      : 98,86%      :   21821     |
+| main.lua                                          : draw                                    :   80                : 41,268      : 68,58%      :   21820     |
+| luven/luven.lua                                   : drawBegin                               :  343                : 38,769      : 64,42%      :   21820     |
+| luven/luven.lua                                   : drawLights                              :  210                : 37,616      : 62,51%      :   21820     |
+| main.lua                                          : update                                  :   30                : 2,152       : 3,58%       :   21820     |
+| luven/luven.lua                                   : drawEnd                                 :  352                : 1,009       : 1,68%       :   21820     |
+| luven/luven.lua                                   : update                                  :  315                : 0,800       : 1,33%       :   21820     |
+| luven/luven.lua                                   : set                                     :  108                : 0,653       : 1,09%       :   21820     |
+| luven/luven.lua                                   : unset                                   :  114                : 0,189       : 0,31%       :   21820     |
+| luven/luven.lua                                   : getLastEnabledLightIndex                :  202                : 0,152       : 0,25%       :   21820     |
+| luven/luven.lua                                   : getLightCount                           :  372                : 0,132       : 0,22%       :   21820     |
+| [string "wrap_Event.lua"]                         : poll                                    :   25                : 0,129       : 0,21%       :   21821     |
+| luven/luven.lua                                   : generateFlicker                         :  252                : 0,109       : 0,18%       :     519     |
+| luven/luven.lua                                   : cameraUpdate                            :   77                : 0,106       : 0,18%       :   21820     |
+| luven/luven.lua                                   : getLightRotation                        :  565                : 0,104       : 0,17%       :   21820     |
+| luven/luven.lua                                   : move                                    :  123                : 0,103       : 0,17%       :   21820     |
+| luven/luven.lua                                   : setLightRotation                        :  544                : 0,103       : 0,17%       :   21820     |
+| luven/luven.lua                                   : cameraDraw                              :   83                : 0,100       : 0,17%       :   21820     |
+| luven/luven.lua                                   : randomFloat                             :  244                : 0,095       : 0,16%       :    2595     |
+| main.lua                                          : anonymous                               :   56                : 0,080       : 0,13%       :     565     |
+| luven/luven.lua                                   : addNormalLight                          :  390                : 0,061       : 0,10%       :     349     |
+| luven/luven.lua                                   : addFlashingLight                        :  485                : 0,014       : 0,02%       :      81     |
+| luven/luven.lua                                   : assertType                              :   51                : 0,012       : 0,02%       :    1296     |
+| luven/luven.lua                                   : assertPositiveNumber                    :   35                : 0,011       : 0,02%       :    1379     |
+| [string "wrap_RandomGenerator.lua"]               : random                                  :   33                : 0,011       : 0,02%       :    2595     |
+| luven/luven.lua                                   : assertRangeNumber                       :   42                : 0,011       : 0,02%       :    1296     |
+| luven/luven.lua                                   : calculateLightOrigin                    :  178                : 0,007       : 0,01%       :     431     |
+| luven/luven.lua                                   : init                                    :  268                : 0,006       : 0,01%       :       1     |
+| luven/luven.lua                                   : registerLightShape                      :  300                : 0,006       : 0,01%       :       3     |
+| luven/luven.lua                                   : clearTable                              :  248                : 0,004       : 0,01%       :     432     |
+| luven/luven.lua                                   : getNextId                               :  234                : 0,003       : 0,01%       :     431     |
+| [string "boot.lua"]                               : anonymous                               :  149                : 0,003       : 0,00%       :     563     |
+| [string "boot.lua"]                               : anonymous                               :  152                : 0,002       : 0,00%       :     571     |
+| luven/luven.lua                                   : dispose                                 :  362                : 0,002       : 0,00%       :       1     |
+| luven/luven.lua                                   : removeLight                             :  526                : 0,002       : 0,00%       :     431     |
+| luven/luven.lua                                   : addFlickeringLight                      :  433                : 0,000       : 0,00%       :       1     |
 | luven/luven.lua                                   : init                                    :   99                : 0,000       : 0,00%       :       1     |
-| luven/luven.lua                                   : setAmbientLightColor                    :  295                : 0,000       : 0,00%       :       1     |
-| [string "boot.lua"]                               : anonymous                               :  212                : 0,000       : 0,00%       :       1     |
-| [string "boot.lua"]                               : anonymous                               :  209                : 0,000       : 0,00%       :       1     |
+| luven/luven.lua                                   : setLightPower                           :  530                : 0,000       : 0,00%       :       7     |
+| luven/luven.lua                                   : setAmbientLightColor                    :  294                : 0,000       : 0,00%       :       1     |
 | [string "boot.lua"]                               : anonymous                               :  158                : 0,000       : 0,00%       :       1     |
-| luven/luven.lua                                   : setScale                                :  132                : 0,000       : 0,00%       :       1     |
+| [string "boot.lua"]                               : anonymous                               :  212                : 0,000       : 0,00%       :       1     |
 | [string "boot.lua"]                               : anonymous                               :  206                : 0,000       : 0,00%       :       1     |
+| [string "boot.lua"]                               : anonymous                               :  209                : 0,000       : 0,00%       :       1     |
+| luven/luven.lua                                   : setScale                                :  132                : 0,000       : 0,00%       :       1     |
 | dev/profi.lua                                     : shouldReturn                            :  199                : 0,000       : 0,00%       :       1     |
-| [C]                                               : getColor                                :   -1                : 0,000       : 0,00%       :    8704     |
-| [C]                                               : applyTransform                          :   -1                : 0,000       : 0,00%       :    8704     |
-| [C]                                               : sleep                                   :   -1                : 0,000       : 0,00%       :    8704     |
-| [C]                                               : present                                 :   -1                : 0,000       : 0,00%       :    8704     |
-| [C]                                               : setTransformation                       :   -1                : 0,000       : 0,00%       :    8704     |
+| [C]                                               : draw                                    :   -1                : 0,000       : 0,00%       : 4272730     |
+| [C]                                               : sleep                                   :   -1                : 0,000       : 0,00%       :   21820     |
+| [C]                                               : applyTransform                          :   -1                : 0,000       : 0,00%       :   21820     |
+| [string "boot.lua"]                               : anonymous                               :  146                : 0,000       : 0,00%       :     565     |
+| [C]                                               : setCanvas                               :   -1                : 0,000       : 0,00%       :   43640     |
+| [C]                                               : setTransformation                       :   -1                : 0,000       : 0,00%       :   21820     |
 | dev/profi.lua                                     : stop                                    :   85                : 0,000       : 0,00%       :       1     |
-| [C]                                               : push                                    :   -1                : 0,000       : 0,00%       :    8704     |
 | main.lua                                          : quit                                    :   91                : 0,000       : 0,00%       :       1     |
-| [C]                                               : print                                   :   -1                : 0,000       : 0,00%       :   17408     |
-| [C]                                               : setCanvas                               :   -1                : 0,000       : 0,00%       :   17408     |
-| [C]                                               : setBlendMode                            :   -1                : 0,000       : 0,00%       :   34816     |
-| [C]                                               : setColor                                :   -1                : 0,000       : 0,00%       :  122991     |
-| [C]                                               : tostring                                :   -1                : 0,000       : 0,00%       :   17408     |
-| [C]                                               : draw                                    :   -1                : 0,000       : 0,00%       :  131695     |
-| [C]                                               : getFPS                                  :   -1                : 0,000       : 0,00%       :    8704     |
-| [C]                                               : pop                                     :   -1                : 0,000       : 0,00%       :    8704     |
-| [string "boot.lua"]                               : anonymous                               :  146                : 0,000       : 0,00%       :      98     |
+| [C]                                               : present                                 :   -1                : 0,000       : 0,00%       :   21820     |
+| [C]                                               : setBlendMode                            :   -1                : 0,000       : 0,00%       :   87280     |
+| [C]                                               : getColor                                :   -1                : 0,000       : 0,00%       :   21820     |
+| [C]                                               : pop                                     :   -1                : 0,000       : 0,00%       :   21820     |
+| [C]                                               : setColor                                :   -1                : 0,000       : 0,00%       : 4250910     |
+| [C]                                               : getFPS                                  :   -1                : 0,000       : 0,00%       :   21820     |
+| [C]                                               : print                                   :   -1                : 0,000       : 0,00%       :   43640     |
+| [C]                                               : tostring                                :   -1                : 0,000       : 0,00%       :   43640     |
+| [C]                                               : push                                    :   -1                : 0,000       : 0,00%       :   21820     |
 | dev/profi.lua                                     : startHooks                              :  234                : 0,000       : 0,00%       :       0     |
-| [C]                                               : getBackgroundColor                      :   -1                : 0,000       : 0,00%       :    8704     |
+| [C]                                               : getBackgroundColor                      :   -1                : 0,000       : 0,00%       :   21820     |
 | [C]                                               : newTransform                            :   -1                : 0,000       : 0,00%       :       1     |
-| [C]                                               : getHeight                               :   -1                : 0,000       : 0,00%       :  123022     |
-| [C]                                               : pairs                                   :   -1                : 0,000       : 0,00%       :      32     |
-| [string "wrap_RandomGenerator.lua"]               : random                                  :   75                : 0,000       : 0,00%       :     720     |
-| [string "wrap_Math.lua"]                          : random                                  :   37                : 0,000       : 0,00%       :     720     |
-| [C]                                               : __index                                 :   -1                : 0,000       : 0,00%       :     720     |
+| [C]                                               : getHeight                               :   -1                : 0,000       : 0,00%       :   22252     |
+| [C]                                               : pairs                                   :   -1                : 0,000       : 0,00%       :     433     |
+| [string "wrap_RandomGenerator.lua"]               : random                                  :   75                : 0,000       : 0,00%       :    2595     |
+| [string "wrap_Math.lua"]                          : random                                  :   37                : 0,000       : 0,00%       :    2595     |
+| [C]                                               : __index                                 :   -1                : 0,000       : 0,00%       :    2595     |
 | [C]                                               : newCanvas                               :   -1                : 0,000       : 0,00%       :       1     |
-| [C]                                               : getWidth                                :   -1                : 0,000       : 0,00%       :  114319     |
+| [C]                                               : getWidth                                :   -1                : 0,000       : 0,00%       :   22253     |
 | [C]                                               : getTime                                 :   -1                : 0,000       : 0,00%       :       2     |
-| [C]                                               : type                                    :   -1                : 0,000       : 0,00%       :     281     |
+| [C]                                               : type                                    :   -1                : 0,000       : 0,00%       :    3971     |
 | dev/profi.lua                                     : start                                   :   67                : 0,000       : 0,00%       :       0     |
 | [C]                                               : newImage                                :   -1                : 0,000       : 0,00%       :       4     |
-| [C]                                               : clear                                   :   -1                : 0,000       : 0,00%       :   17408     |
-| [C]                                               : random                                  :   -1                : 0,000       : 0,00%       :     720     |
+| [C]                                               : clear                                   :   -1                : 0,000       : 0,00%       :   43640     |
+| [C]                                               : random                                  :   -1                : 0,000       : 0,00%       :    2595     |
 | main.lua                                          : load                                    :   17                : 0,000       : 0,00%       :       0     |
 | dev/profi.lua                                     : stopHooks                               :  238                : 0,000       : 0,00%       :       1     |
-| [C]                                               : (for generator)                         :   -1                : 0,000       : 0,00%       :    8999     |
-| [C]                                               : isDown                                  :   -1                : 0,000       : 0,00%       :   34816     |
-| [C]                                               : origin                                  :   -1                : 0,000       : 0,00%       :    8704     |
-| [C]                                               : isActive                                :   -1                : 0,000       : 0,00%       :    8704     |
-| [C]                                               : tonumber                                :   -1                : 0,000       : 0,00%       :     720     |
-| [C]                                               : pump                                    :   -1                : 0,000       : 0,00%       :    8705     |
-| [C]                                               : yield                                   :   -1                : 0,000       : 0,00%       :    8705     |
-| [C]                                               : step                                    :   -1                : 0,000       : 0,00%       :    8705     |
-| [C]                                               : xpcall                                  :   -1                : 0,000       : 0,00%       :    8705     |
+| [C]                                               : (for generator)                         :   -1                : 0,000       : 0,00%       :   23524     |
+| [C]                                               : isDown                                  :   -1                : 0,000       : 0,00%       :   87280     |
+| [C]                                               : origin                                  :   -1                : 0,000       : 0,00%       :   21820     |
+| [C]                                               : isActive                                :   -1                : 0,000       : 0,00%       :   21820     |
+| [C]                                               : tonumber                                :   -1                : 0,000       : 0,00%       :    2595     |
+| [C]                                               : pump                                    :   -1                : 0,000       : 0,00%       :   21821     |
+| [C]                                               : yield                                   :   -1                : 0,000       : 0,00%       :   21821     |
+| [C]                                               : step                                    :   -1                : 0,000       : 0,00%       :   21821     |
+| [C]                                               : xpcall                                  :   -1                : 0,000       : 0,00%       :   21821     |
 | [string "boot.lua"]                               : anonymous                               :  487                : 0,000       : 0,00%       :       0     |
 | [string "boot.lua"]                               : anonymous                               :  639                : 0,000       : 0,00%       :       0     |
 | [C]                                               : sethook                                 :   -1                : 0,000       : 0,00%       :       1     |

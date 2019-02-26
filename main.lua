@@ -24,7 +24,7 @@ function love.load()
     Luven.camera:setScale(zoom)
 
     lightId = Luven.addFlickeringLight(600, 400, { min = { 0.8, 0.0, 0.8, 0.8 }, max = { 1.0, 0.0, 1.0, 1.0 } }, { min = 0.25, max = 0.27 }, { min = 0.12, max = 0.2 })
-    lightId2 = Luven.addNormalLight(700, 400, { 1.0, 0.0 , 1.0, 1.0 }, power, Luven.lightShapes.cone, 0.5, 5)
+    lightId2 = Luven.addNormalLight(700, 400, { 1.0, 0.0 , 1.0, 1 }, power, Luven.lightShapes.cone, 0.5, 5)
 end -- function
 
 function love.update(dt)
