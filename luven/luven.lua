@@ -1,5 +1,5 @@
 local luven = {
-    _VERSION     = 'Luven v1.024 exp.',
+    _VERSION     = 'Luven v1.025 exp.',
     _URL         = 'https://github.com/lionelleeser/Luven',
     _DESCRIPTION = 'A minimalist lighting system for Löve2D',
     _CONTRIBUTORS = 'Lionel Leeser, Pedro Gimeno (Help with camera)',
@@ -225,7 +225,6 @@ local function drawLights()
     end -- for
 
     love.graphics.setColor(oldR, oldG, oldB, oldA)
-
     love.graphics.setBlendMode("alpha")
 
     love.graphics.setCanvas()
@@ -267,7 +266,7 @@ end -- function
 
 function luven.init(screenWidth, screenHeight, useCamera)
     screenWidth = screenWidth or love.graphics.getWidth()
-    screenHeight = screenHeight or love.graphics.getWidth()
+    screenHeight = screenHeight or love.graphics.getHeight()
     if (useCamera ~= nil) then
         useIntegratedCamera = useCamera
     else
@@ -353,7 +352,7 @@ function luven.drawEnd()
     if (useIntegratedCamera) then
         luven.camera:unset()
     end -- if
-
+    
     love.graphics.setBlendMode("multiply", "premultiplied")
     love.graphics.draw(lightMap)
     love.graphics.setBlendMode("alpha")
@@ -367,6 +366,8 @@ function luven.dispose()
     end -- for
 
     clearTable(currentLights)
+
+    lightMap:release()
 end -- if
 
 function luven.getLightCount()
@@ -387,13 +388,13 @@ end -- function
 
 -- param : color = { r, g, b } (values between 0 - 1)
 -- return : lightId
-function luven.addNormalLight(x, y, color, power, lightShape, angle, scaleX, scaleY)
+function luven.addNormalLight(x, y, color, power, lightShape, angle, sx, sy)
     lightShape = lightShape or luven.lightShapes.round
     angle = angle or 0
-    scaleX = scaleX or 1
-    scaleY = scaleY or scaleX
+    sx = sx or 1
+    sy = sy or sx
 
-    local functionName = "luven.addNormalLight(x, y, color, power, angle, scaleX, scaleY)"
+    local functionName = "luven.addNormalLight(x, y, color, power, angle, sx, sy)"
     assertType(functionName, "x", x, "number")
     assertType(functionName, "y", y, "number")
     assertRangeNumber(functionName, "color[1]", color[1])
@@ -401,8 +402,8 @@ function luven.addNormalLight(x, y, color, power, lightShape, angle, scaleX, sca
     assertRangeNumber(functionName, "color[3]", color[3])
     assertPositiveNumber(functionName, "power", power)
     assertType(functionName, "angle", angle, "number")
-    assertPositiveNumber(functionName, "scaleX", scaleX)
-    assertPositiveNumber(functionName, "scaleY", scaleY)
+    assertPositiveNumber(functionName, "sx", sx)
+    assertPositiveNumber(functionName, "sy", sy)
 
     local id = getNextId()
     local light = currentLights[id]
@@ -413,8 +414,8 @@ function luven.addNormalLight(x, y, color, power, lightShape, angle, scaleX, sca
     light.x = x
     light.y = y
     light.angle = angle
-    light.scaleX = scaleX
-    light.scaleY = scaleY
+    light.scaleX = sx
+    light.scaleY = sy
     light.color = color
     light.power = power
     light.type = lightTypes.normal
@@ -430,13 +431,13 @@ end -- function
 --          powerRange = { min = n, max = n }
 --          speedRange = { min = n, max = n }
 -- return : lightId
-function luven.addFlickeringLight(x, y, colorRange, powerRange, speedRange, lightShape, angle, scaleX, scaleY)
+function luven.addFlickeringLight(x, y, colorRange, powerRange, speedRange, lightShape, angle, sx, sy)
     lightShape = lightShape or luven.lightShapes.round
     angle = angle or 0
-    scaleX = scaleX or 1
-    scaleY = scaleY or scaleX
+    sx = sx or 1
+    sy = sy or sx
 
-    local functionName = "luven.addFlickeringLight(x, y, colorRange, powerRange, speedRange, angle, scaleX, scaleY)"
+    local functionName = "luven.addFlickeringLight(x, y, colorRange, powerRange, speedRange, angle, sx, sy)"
     assertType(functionName, "x", x, "number")
     assertType(functionName, "y", y, "number")
     assertRangeNumber(functionName, "colorRange.min[1]", colorRange.min[1])
@@ -450,8 +451,8 @@ function luven.addFlickeringLight(x, y, colorRange, powerRange, speedRange, ligh
     assertPositiveNumber(functionName, "speedRange.min", speedRange.min)
     assertPositiveNumber(functionName, "speedRange.max", speedRange.max)
     assertType(functionName, "angle", angle, "number")
-    assertPositiveNumber(functionName, "scaleX", scaleX)
-    assertPositiveNumber(functionName, "scaleY", scaleY)
+    assertPositiveNumber(functionName, "sx", sx)
+    assertPositiveNumber(functionName, "sy", sy)
     
     local id = getNextId()
     local light = currentLights[id]
@@ -462,8 +463,8 @@ function luven.addFlickeringLight(x, y, colorRange, powerRange, speedRange, ligh
     light.x = x
     light.y = y
     light.angle = angle
-    light.scaleX = scaleX
-    light.scaleY = scaleY
+    light.scaleX = sx
+    light.scaleY = sy
     light.color = { 0, 0, 0 }
     light.power = 0
     light.type = lightTypes.flickering
@@ -482,13 +483,13 @@ function luven.addFlickeringLight(x, y, colorRange, powerRange, speedRange, ligh
     return light.id
 end -- function
 
-function luven.addFlashingLight(x, y, color, maxPower, speed, lightShape, angle, scaleX, scaleY)
+function luven.addFlashingLight(x, y, color, maxPower, speed, lightShape, angle, sx, sy)
     lightShape = lightShape or luven.lightShapes.round
     angle = angle or 0
-    scaleX = scaleX or 1
-    scaleY = scaleY or scaleX
+    sx = sx or 1
+    sy = sy or sx
 
-    local functionName = "luven.addFlashingLight(x, y, color, maxPower, speed, angle, scaleX, scaleY)"
+    local functionName = "luven.addFlashingLight(x, y, color, maxPower, speed, angle, sx, sy)"
     assertType(functionName, "x", x, "number")
     assertType(functionName, "y", y, "number")
     assertRangeNumber(functionName, "color[1]", color[1])
@@ -497,8 +498,8 @@ function luven.addFlashingLight(x, y, color, maxPower, speed, lightShape, angle,
     assertPositiveNumber(functionName, "maxPower", maxPower)
     assertPositiveNumber(functionName, "speed", speed)
     assertType(functionName, "angle", angle, "number")
-    assertPositiveNumber(functionName, "scaleX", scaleX)
-    assertPositiveNumber(functionName, "scaleY", scaleY)
+    assertPositiveNumber(functionName, "sx", sx)
+    assertPositiveNumber(functionName, "sy", sy)
 
     local id = getNextId()
     local light = currentLights[id]
@@ -508,8 +509,8 @@ function luven.addFlashingLight(x, y, color, maxPower, speed, lightShape, angle,
     light.x = x
     light.y = y
     light.angle = angle
-    light.scaleX = scaleX
-    light.scaleY = scaleY
+    light.scaleX = sx
+    light.scaleY = sy
     light.color = color
     light.power = 0
     light.type = lightTypes.flashing
@@ -525,6 +526,11 @@ end -- function
 
 function luven.removeLight(lightId)
     currentLights[lightId].enabled = false
+end -- function
+
+function luven.moveLight(lightId, dx, dy)
+    currentLights[lightId].x = currentLights[index].x + dx
+    currentLights[lightId].y = currentLights[index].y + dy
 end -- function
 
 function luven.setLightPower(lightId, power)
@@ -545,9 +551,12 @@ function luven.setLightRotation(lightId, dr)
     currentLights[lightId].angle = dr
 end -- function
 
-function luven.moveLight(lightId, dx, dy)
-    currentLights[lightId].x = currentLights[index].x + dx
-    currentLights[lightId].y = currentLights[index].y + dy
+function luven.setLightScale(lightId, sx, sy)
+    sx = sx or 1
+    sy = sy or sx
+
+    currentLights[lightId].scaleX = sx
+    currentLights[lightId].scaleY = sy
 end -- function
 
 function luven.getLightPower(lightId)
@@ -564,6 +573,10 @@ end -- function
 
 function luven.getLightRotation(lightId)
     return currentLights[lightId].angle
+end -- function
+
+function luven.getLightScale(lightId)
+    return currentLights[lightId].scaleX, currentLights[lightId].scaleY
 end -- function
 
 return luven
