@@ -1,5 +1,5 @@
 local luven = {
-    _VERSION     = 'Luven v1.025 exp.',
+    _VERSION     = 'Luven v1.026 exp.',
     _URL         = 'https://github.com/lionelleeser/Luven',
     _DESCRIPTION = 'A minimalist lighting system for Löve2D',
     _CONTRIBUTORS = 'Lionel Leeser, Pedro Gimeno (Help with camera)',
@@ -56,6 +56,14 @@ local function assertType(functionName, parameterName, parameterValue, parameter
 end -- function
 
 -- ///////////////////////////////////////////////
+-- /// Aliases
+-- ///////////////////////////////////////////////
+
+local lg = love.graphics
+local lgDraw = lg.draw
+local lgSetColor = lg.setColor
+
+-- ///////////////////////////////////////////////
 -- /// Luven camera
 -- ///////////////////////////////////////////////
 
@@ -84,7 +92,7 @@ local function cameraDraw()
     if (luven.camera.shakeDuration > 0) then
         local dx = love.math.random(-luven.camera.shakeMagnitude, luven.camera.shakeMagnitude)
         local dy = love.math.random(-luven.camera.shakeMagnitude, luven.camera.shakeMagnitude)
-        love.graphics.translate(dx, dy)
+        lg.translate(dx, dy)
     end -- if
 end -- function
 
@@ -106,13 +114,13 @@ function luven.camera:init(x, y)
 end -- function
 
 function luven.camera:set()
-    love.graphics.push()
-    self.transform:setTransformation(love.graphics.getWidth() / 2, love.graphics.getHeight() / 2, self.rotation, self.scaleX, self.scaleY, self.x, self.y)
-    love.graphics.applyTransform(self.transform)
+    lg.push()
+    self.transform:setTransformation(lg.getWidth() / 2, lg.getHeight() / 2, self.rotation, self.scaleX, self.scaleY, self.x, self.y)
+    lg.applyTransform(self.transform)
 end -- function
 
 function luven.camera:unset()
-    love.graphics.pop()
+    lg.pop()
 end -- function
 
 function luven.camera:setPosition(x, y)
@@ -144,8 +152,8 @@ end -- function
 -- ///////////////////////////////////////////////
 
 local NUM_LIGHTS = 500
-
 local lightsSize = 256
+local maxShakeMagnitude = 100
 
 local luvenPath = debug.getinfo(1,'S').source -- get Luven path
 luvenPath = string.sub(luvenPath, 2, string.len(luvenPath) - 9) -- 9 = luven.lua
@@ -208,10 +216,10 @@ local function getLastEnabledLightIndex()
 end -- function
 
 local function drawLights()
-    love.graphics.setCanvas(lightMap)
-    love.graphics.setBlendMode("add")
+    lg.setCanvas(lightMap)
+    lg.setBlendMode("add")
 
-    love.graphics.clear(ambientLightColor) -- ambientLightColor
+    lg.clear(ambientLightColor) -- ambientLightColor
 
     local oldR, oldG, oldB, oldA = love.graphics.getColor()
 
@@ -219,20 +227,21 @@ local function drawLights()
     for i = 1, lastActiveLightIndex do
         if (currentLights[i].enabled) then
             local light = currentLights[i]
-            love.graphics.setColor(light.color)
-            love.graphics.draw(light.shape.sprite, light.x, light.y, light.angle, light.scaleX * light.power, light.scaleY * light.power, light.origin.x, light.origin.y)
+            lgSetColor(light.color)
+            lgDraw(light.shape.sprite, light.x + (maxShakeMagnitude / 2), light.y + (maxShakeMagnitude / 2), light.angle, light.scaleX * light.power, light.scaleY * light.power, light.origin.x, light.origin.y)
         end -- if
     end -- for
 
-    love.graphics.setColor(oldR, oldG, oldB, oldA)
-    love.graphics.setBlendMode("alpha")
+    lgSetColor(oldR, oldG, oldB, oldA)
+    lg.setBlendMode("alpha")
 
-    love.graphics.setCanvas()
+    lg.setCanvas()
 end -- function
 
 local function getNextId()
     for i = 1, NUM_LIGHTS do
-        if (currentLights[i].enabled == false) then
+        local light = currentLights[i]
+        if (light.enabled == false) then
             return i
         end -- if
     end -- for
@@ -265,8 +274,8 @@ end -- function
 -- ///////////////////////////////////////////////
 
 function luven.init(screenWidth, screenHeight, useCamera)
-    screenWidth = screenWidth or love.graphics.getWidth()
-    screenHeight = screenHeight or love.graphics.getHeight()
+    screenWidth = screenWidth or lg.getWidth()
+    screenHeight = screenHeight or lg.getHeight()
     if (useCamera ~= nil) then
         useIntegratedCamera = useCamera
     else
@@ -282,7 +291,7 @@ function luven.init(screenWidth, screenHeight, useCamera)
     luven.registerLightShape("rectangle", luvenPath .. "lights/rectangle.png")
     luven.registerLightShape("cone", luvenPath .. "lights/cone.png", "min", "center")
 
-    lightMap = love.graphics.newCanvas(screenWidth, screenHeight)
+    lightMap = lg.newCanvas(screenWidth + (2 * maxShakeMagnitude), screenHeight + (2 * maxShakeMagnitude))
 
     for i = 1, NUM_LIGHTS do
         currentLights[i] = { enabled = false }
@@ -301,7 +310,7 @@ function luven.registerLightShape(name, spritePath, originX, originY)
     originY = originY or originX
 
     luven.lightShapes[name] = {
-        sprite = love.graphics.newImage(spritePath),
+        sprite = lg.newImage(spritePath),
         originX = originX,
         originY = originY
     }
@@ -353,9 +362,9 @@ function luven.drawEnd()
         luven.camera:unset()
     end -- if
     
-    love.graphics.setBlendMode("multiply", "premultiplied")
-    love.graphics.draw(lightMap)
-    love.graphics.setBlendMode("alpha")
+    lg.setBlendMode("multiply", "premultiplied")
+    lgDraw(lightMap, -maxShakeMagnitude, -maxShakeMagnitude)
+    lg.setBlendMode("alpha")
 end -- function
 
 function luven.dispose()
