@@ -1,5 +1,5 @@
 local luven = {
-    _VERSION     = 'Luven v1.026 exp.',
+    _VERSION     = 'Luven v1.027 exp.',
     _URL         = 'https://github.com/lionelleeser/Luven',
     _DESCRIPTION = 'A minimalist lighting system for Löve2D',
     _CONTRIBUTORS = 'Lionel Leeser, Pedro Gimeno (Help with camera)',
@@ -88,14 +88,6 @@ local function cameraUpdate(dt)
     end -- if
 end -- function
 
-local function cameraDraw()
-    if (luven.camera.shakeDuration > 0) then
-        local dx = love.math.random(-luven.camera.shakeMagnitude, luven.camera.shakeMagnitude)
-        local dy = love.math.random(-luven.camera.shakeMagnitude, luven.camera.shakeMagnitude)
-        lg.translate(dx, dy)
-    end -- if
-end -- function
-
 local function cameraGetViewMatrix()
     return luven.camera.transform:getMatrix()
 end -- function
@@ -114,8 +106,13 @@ function luven.camera:init(x, y)
 end -- function
 
 function luven.camera:set()
+    local dx, dy = 0, 0
+    if (luven.camera.shakeDuration > 0) then
+        dx = love.math.random(-luven.camera.shakeMagnitude, luven.camera.shakeMagnitude)
+        dy = love.math.random(-luven.camera.shakeMagnitude, luven.camera.shakeMagnitude)
+    end -- if
     lg.push()
-    self.transform:setTransformation(lg.getWidth() / 2, lg.getHeight() / 2, self.rotation, self.scaleX, self.scaleY, self.x, self.y)
+    self.transform:setTransformation(lg.getWidth() / 2, lg.getHeight() / 2, self.rotation, self.scaleX, self.scaleY, self.x + dx, self.y + dx)
     lg.applyTransform(self.transform)
 end -- function
 
@@ -153,7 +150,6 @@ end -- function
 
 local NUM_LIGHTS = 500
 local lightsSize = 256
-local maxShakeMagnitude = 100
 
 local luvenPath = debug.getinfo(1,'S').source -- get Luven path
 luvenPath = string.sub(luvenPath, 2, string.len(luvenPath) - 9) -- 9 = luven.lua
@@ -228,7 +224,7 @@ local function drawLights()
         if (currentLights[i].enabled) then
             local light = currentLights[i]
             lgSetColor(light.color)
-            lgDraw(light.shape.sprite, light.x + (maxShakeMagnitude / 2), light.y + (maxShakeMagnitude / 2), light.angle, light.scaleX * light.power, light.scaleY * light.power, light.origin.x, light.origin.y)
+            lgDraw(light.shape.sprite, light.x, light.y, light.angle, light.scaleX * light.power, light.scaleY * light.power, light.origin.x, light.origin.y)
         end -- if
     end -- for
 
@@ -291,7 +287,7 @@ function luven.init(screenWidth, screenHeight, useCamera)
     luven.registerLightShape("rectangle", luvenPath .. "lights/rectangle.png")
     luven.registerLightShape("cone", luvenPath .. "lights/cone.png", "min", "center")
 
-    lightMap = lg.newCanvas(screenWidth + (2 * maxShakeMagnitude), screenHeight + (2 * maxShakeMagnitude))
+    lightMap = lg.newCanvas(screenWidth, screenHeight)
 
     for i = 1, NUM_LIGHTS do
         currentLights[i] = { enabled = false }
@@ -350,7 +346,6 @@ end -- function
 
 function luven.drawBegin()
     if (useIntegratedCamera) then
-        cameraDraw()
         luven.camera:set()
     end -- if
 
@@ -363,7 +358,7 @@ function luven.drawEnd()
     end -- if
     
     lg.setBlendMode("multiply", "premultiplied")
-    lgDraw(lightMap, -maxShakeMagnitude, -maxShakeMagnitude)
+    lgDraw(lightMap)
     lg.setBlendMode("alpha")
 end -- function
 
