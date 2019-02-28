@@ -186,30 +186,6 @@ luven.lightShapes = {}
 -- /// Luven utils local functions
 -- ///////////////////////////////////////////////
 
-local function calculateLightOrigin(lightId)
-    local light = currentLights[lightId]
-
-    local origin = { x = 0, y = 0 }
-
-    if (light.shape.originX == "center") then
-        origin.x = light.shape.sprite:getWidth() / 2
-    elseif (light.shape.originX == "min") then
-        origin.x = 0
-    elseif (light.shape.originX == "max") then
-        origin.x = light.shape.sprite:getWidth()
-    end -- if
-
-    if (light.shape.originY == "center") then
-        origin.y = light.shape.sprite:getHeight() / 2
-    elseif (light.shape.originY == "min") then
-        origin.y = 0
-    elseif (light.shape.originY == "max") then
-        origin.y = light.shape.sprite:getHeight()
-    end -- if
-
-    return origin
-end -- function
-
 local function getLastEnabledLightIndex()
     for i = NUM_LIGHTS, 1, -1 do
         if (currentLights[i].enabled) then
@@ -231,7 +207,7 @@ local function drawLights()
         if (currentLights[i].enabled) then
             local light = currentLights[i]
             lgSetColor(light.color)
-            lgDraw(light.shape.sprite, light.x, light.y, light.angle, light.scaleX * light.power, light.scaleY * light.power, light.origin.x, light.origin.y)
+            lgDraw(light.shape.sprite, light.x, light.y, light.angle, light.scaleX * light.power, light.scaleY * light.power, light.shape.originX, light.shape.originY)
         end -- if
     end -- for
 
@@ -292,11 +268,9 @@ function luven.init(screenWidth, screenHeight, useCamera)
 
     luven.registerLightShape("round", luvenPath .. "lights/round.png")
     luven.registerLightShape("rectangle", luvenPath .. "lights/rectangle.png")
-    luven.registerLightShape("cone", luvenPath .. "lights/cone.png", "min", "center")
+    luven.registerLightShape("cone", luvenPath .. "lights/cone.png", 0)
 
     lightMap = lg.newCanvas(screenWidth, screenHeight)
-
-    luvenShader:send("lightsCount", lightsCount)
 
     for i = 1, NUM_LIGHTS do
         currentLights[i] = { enabled = false }
@@ -309,22 +283,23 @@ function luven.setAmbientLightColor(color)
     ambientLightColor = color
 end -- function
 
--- param : originX, originY : TEXT : "center", "min", "max"
 function luven.registerLightShape(name, spritePath, originX, originY)
-    originX = originX or "center"
-    originY = originY or originX
-
+    local functionName = "luven.registerLightShape( name, spritePath, [ originX ], [ originY ] )"
     assertLightShape(name)
+    assertType(functionName, "spritePath", spritePath, "string")
+
+    local lightSprite = lg.newImage(spritePath)
+    originX = originX or (lightSprite:getWidth() / 2)
+    originY = originY or (lightSprite:getHeight() / 2)
+
+    assertPositiveNumber(functionName, "originX", originX)
+    assertPositiveNumber(functionName, "originY", originY)
 
     luven.lightShapes[name] = {
-        sprite = lg.newImage(spritePath),
+        sprite = lightSprite,
         originX = originX,
         originY = originY
     }
-end -- function
-
-function luven.sendCustomViewMatrix(viewMatrix)
-    error("luven.sendCustomViewMatrix : Not implemented anymore. Stop use it.")
 end -- function
 
 function luven.update(dt)
@@ -435,7 +410,6 @@ function luven.addNormalLight(x, y, color, power, lightShape, angle, sx, sy)
     light.power = power
     light.type = lightTypes.normal
     light.shape = lightShape
-    light.origin = calculateLightOrigin(light.id)
 
     light.enabled = true
 
@@ -484,7 +458,6 @@ function luven.addFlickeringLight(x, y, colorRange, powerRange, speedRange, ligh
     light.power = 0
     light.type = lightTypes.flickering
     light.shape = lightShape
-    light.origin = calculateLightOrigin(light.id)
 
     light.flickTimer = 0
     light.colorRange = colorRange
@@ -530,7 +503,6 @@ function luven.addFlashingLight(x, y, color, maxPower, speed, lightShape, angle,
     light.power = 0
     light.type = lightTypes.flashing
     light.shape = lightShape
-    light.origin = calculateLightOrigin(light.id)
     
     light.maxPower = maxPower
     light.speed = speed
