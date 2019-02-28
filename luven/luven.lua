@@ -1,5 +1,5 @@
 local luven = {
-    _VERSION     = 'Luven v1.027 exp.',
+    _VERSION     = 'Luven v1.028 exp.',
     _URL         = 'https://github.com/lionelleeser/Luven',
     _DESCRIPTION = 'A minimalist lighting system for Löve2D',
     _CONTRIBUTORS = 'Lionel Leeser, Pedro Gimeno (Help with camera)',
@@ -112,7 +112,7 @@ function luven.camera:set()
         dy = love.math.random(-luven.camera.shakeMagnitude, luven.camera.shakeMagnitude)
     end -- if
     lg.push()
-    self.transform:setTransformation(lg.getWidth() / 2, lg.getHeight() / 2, self.rotation, self.scaleX, self.scaleY, self.x + dx, self.y + dx)
+    self.transform:setTransformation(lg.getWidth() / 2, lg.getHeight() / 2, self.rotation, self.scaleX, self.scaleY, self.x + dx, self.y + dy)
     lg.applyTransform(self.transform)
 end -- function
 
