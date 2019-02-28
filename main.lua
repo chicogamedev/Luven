@@ -15,6 +15,7 @@ local lightId2 = 0
 local power = 0.25
 
 function love.load()
+    love.graphics.setDefaultFilter("nearest", "nearest")
     Profi:start()
     image = love.graphics.newImage("Background.png")
 
@@ -24,7 +25,8 @@ function love.load()
     Luven.camera:setScale(zoom)
 
     lightId = Luven.addFlickeringLight(600, 400, { min = { 0.8, 0.0, 0.8, 0.8 }, max = { 1.0, 0.0, 1.0, 1.0 } }, { min = 0.25, max = 0.27 }, { min = 0.12, max = 0.2 })
-    lightId2 = Luven.addNormalLight(700, 400, { 1.0, 0.0 , 1.0, 1 }, power, Luven.lightShapes.cone, 0.5, 5)
+    lightId2 = Luven.addFlickeringLight(700, 400, { min = { 0.8, 0.0, 0.8, 0.8 }, max = { 1.0, 0.0, 1.0, 1.0 } }, { min = 0.25, max = 0.7 }, { min = 0.12, max = 0.2 }, Luven.lightShapes.cone)
+    Luven.addNormalLight(700, 500, { 0.9, 1, 0 }, 1, Luven.lightShapes.cone, 0)
 end -- function
 
 function love.update(dt)

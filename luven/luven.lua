@@ -1,7 +1,7 @@
 local luven = {
-    _VERSION     = 'Luven v1.028 exp.',
-    _URL         = 'https://github.com/lionelleeser/Luven',
-    _DESCRIPTION = 'A minimalist lighting system for Löve2D',
+    _VERSION     = 'Luven v1.029 exp.',
+    _URL         = 'https://github.com/chicogamedev/Luven',
+    _DESCRIPTION = 'A minimalist light engine for Löve2D',
     _CONTRIBUTORS = 'Lionel Leeser, Pedro Gimeno (Help with camera)',
     _LICENSE     = [[
         MIT License
@@ -35,7 +35,7 @@ local luven = {
 local function assertPositiveNumber(functionName, parameterName, parameterValue, level)
     level = level or 3
     if ((type(parameterValue) ~= "number") or (parameterValue < 0)) then
-        error(functionName .. "\n        parameter : " .. parameterName .. ", expected positive number.", 3)
+        error(functionName .. "\n        parameter : " .. parameterName .. ", expected positive number.", level)
     end -- if
 end -- function
 
@@ -44,14 +44,21 @@ local function assertRangeNumber(functionName, parameterName, parameterValue, mi
     max = max or 1
     level = level or 3
     if ((type(parameterValue) ~= "number") or (parameterValue < min) or (parameterValue > max)) then
-        error(functionName .. "\n        parameter : " .. parameterName .. ", expected range number between " .. min .. " and " .. max .. ".", 3)
+        error(functionName .. "\n        parameter : " .. parameterName .. ", expected range number between " .. min .. " and " .. max .. ".", level)
     end -- if
 end -- function
 
 local function assertType(functionName, parameterName, parameterValue, parameterType, level)
     level = level or 3
     if (type(parameterValue) ~= parameterType) then
-        error(functionName .. "\n        parameter : " .. parameterName .. ", expected type ".. parameterType .. ".", 3)
+        error(functionName .. "\n        parameter : " .. parameterName .. ", expected type ".. parameterType .. ".", level)
+    end -- if
+end -- function
+
+local function assertLightShape(newShapeName, level)
+    level = level or 3
+    if (luven.lightShapes[newShapeName] ~= nil) then
+        error("The light shapes : " .. newShapeName .. " already exists, please set another name.")
     end -- if
 end -- function
 
@@ -217,7 +224,7 @@ local function drawLights()
 
     lg.clear(ambientLightColor) -- ambientLightColor
 
-    local oldR, oldG, oldB, oldA = love.graphics.getColor()
+    local oldR, oldG, oldB, oldA = lg.getColor()
 
     -- lastActiveLightIndex updated in luven.update()
     for i = 1, lastActiveLightIndex do
@@ -304,6 +311,8 @@ end -- function
 function luven.registerLightShape(name, spritePath, originX, originY)
     originX = originX or "center"
     originY = originY or originX
+
+    assertLightShape(name)
 
     luven.lightShapes[name] = {
         sprite = lg.newImage(spritePath),
