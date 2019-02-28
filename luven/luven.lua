@@ -1,8 +1,8 @@
 local luven = {
-    _VERSION     = 'Luven v1.01',
-    _URL         = 'https://github.com/lionelleeser/Luven',
-    _DESCRIPTION = 'A minimalist lighting system for Löve2D',
-    _CONTRIBUTORS = 'Lionel Leeser, Pedro Gimeno (Help with shader and camera)',
+    _VERSION     = 'Luven v1.02',
+    _URL         = 'https://github.com/chicogamedev/Luven',
+    _DESCRIPTION = 'A minimalist light engine for Löve2D',
+    _CONTRIBUTORS = 'Lionel Leeser, Pedro Gimeno (Help with camera)',
     _LICENSE     = [[
         MIT License
 
@@ -35,7 +35,7 @@ local luven = {
 local function assertPositiveNumber(functionName, parameterName, parameterValue, level)
     level = level or 3
     if ((type(parameterValue) ~= "number") or (parameterValue < 0)) then
-        error(functionName .. "\n        parameter : " .. parameterName .. ", expected positive number.", 3)
+        error(functionName .. "\n        parameter : " .. parameterName .. ", expected positive number.", level)
     end -- if
 end -- function
 
@@ -44,16 +44,31 @@ local function assertRangeNumber(functionName, parameterName, parameterValue, mi
     max = max or 1
     level = level or 3
     if ((type(parameterValue) ~= "number") or (parameterValue < min) or (parameterValue > max)) then
-        error(functionName .. "\n        parameter : " .. parameterName .. ", expected range number between " .. min .. " and " .. max .. ".", 3)
+        error(functionName .. "\n        parameter : " .. parameterName .. ", expected range number between " .. min .. " and " .. max .. ".", level)
     end -- if
 end -- function
 
 local function assertType(functionName, parameterName, parameterValue, parameterType, level)
     level = level or 3
     if (type(parameterValue) ~= parameterType) then
-        error(functionName .. "\n        parameter : " .. parameterName .. ", expected type ".. parameterType .. ".", 3)
+        error(functionName .. "\n        parameter : " .. parameterName .. ", expected type ".. parameterType .. ".", level)
     end -- if
 end -- function
+
+local function assertLightShape(newShapeName, level)
+    level = level or 3
+    if (luven.lightShapes[newShapeName] ~= nil) then
+        error("The light shapes : " .. newShapeName .. " already exists, please set another name.")
+    end -- if
+end -- function
+
+-- ///////////////////////////////////////////////
+-- /// Aliases
+-- ///////////////////////////////////////////////
+
+local lg = love.graphics
+local lgDraw = lg.draw
+local lgSetColor = lg.setColor
 
 -- ///////////////////////////////////////////////
 -- /// Luven camera
@@ -80,14 +95,6 @@ local function cameraUpdate(dt)
     end -- if
 end -- function
 
-local function cameraDraw()
-    if (luven.camera.shakeDuration > 0) then
-        local dx = love.math.random(-luven.camera.shakeMagnitude, luven.camera.shakeMagnitude)
-        local dy = love.math.random(-luven.camera.shakeMagnitude, luven.camera.shakeMagnitude)
-        love.graphics.translate(dx, dy)
-    end -- if
-end -- function
-
 local function cameraGetViewMatrix()
     return luven.camera.transform:getMatrix()
 end -- function
@@ -106,13 +113,18 @@ function luven.camera:init(x, y)
 end -- function
 
 function luven.camera:set()
-    love.graphics.push()
-    self.transform:setTransformation(love.graphics.getWidth() / 2, love.graphics.getHeight() / 2, self.rotation, self.scaleX, self.scaleY, self.x, self.y)
-    love.graphics.applyTransform(self.transform)
+    local dx, dy = 0, 0
+    if (luven.camera.shakeDuration > 0) then
+        dx = love.math.random(-luven.camera.shakeMagnitude, luven.camera.shakeMagnitude)
+        dy = love.math.random(-luven.camera.shakeMagnitude, luven.camera.shakeMagnitude)
+    end -- if
+    lg.push()
+    self.transform:setTransformation(lg.getWidth() / 2, lg.getHeight() / 2, self.rotation, self.scaleX, self.scaleY, self.x + dx, self.y + dy)
+    lg.applyTransform(self.transform)
 end -- function
 
 function luven.camera:unset()
-    love.graphics.pop()
+    lg.pop()
 end -- function
 
 function luven.camera:setPosition(x, y)
@@ -143,51 +155,11 @@ end -- function
 -- /// Luven variables declarations
 -- ///////////////////////////////////////////////
 
-local NUM_LIGHTS = 32
-local shader_code = [[
-    #define NUM_LIGHTS 32
+local NUM_LIGHTS = 500
+local lightsSize = 256
 
-    struct Light {
-        vec2 position;
-        vec3 diffuse;
-        float power;
-    };
-
-    extern Light lights[NUM_LIGHTS];
-
-    extern vec2 screen;
-    extern vec3 ambientLightColor = vec3(0);
-
-    extern mat4 viewMatrix;
-
-    extern int lightsCount;
-
-    const float constant = 1.0;
-    const float linear = 0.09;
-    const float quadratic = 0.032;
-
-    vec3 diffuse;
-
-    vec4 effect(vec4 color, Image image, vec2 uvs, vec2 screen_coords){
-        vec4 pixel = Texel(image, uvs) * color;
-
-        vec2 norm_screen = screen_coords / screen;
-
-        diffuse = ambientLightColor;
-
-        for (int i = 0; i < lightsCount; i++) {
-            vec2 norm_pos = (viewMatrix * vec4(lights[i].position, 0.0, 1.0)).xy / screen;
-                
-            float distance = length(norm_pos - norm_screen) / (lights[i].power / 1000);
-            float attenuation = 1.0 / (constant + linear * distance + quadratic * (distance * distance));
-            diffuse += lights[i].diffuse * attenuation;
-        }
-
-        diffuse = clamp(diffuse, 0.0, 1.0);
-
-        return pixel * vec4(diffuse, 1.0);
-    }
-]]
+local luvenPath = debug.getinfo(1,'S').source -- get Luven path
+luvenPath = string.sub(luvenPath, 2, string.len(luvenPath) - 9) -- 9 = luven.lua
 
 local lightTypes = {
     normal = 0,
@@ -196,45 +168,92 @@ local lightTypes = {
 }
 
 local currentLights = {}
-local lightsCount = 0
-local luvenShader = nil
 local useIntegratedCamera = true
+
+local ambientLightColor = { 0, 0, 0, 1 }
+
+local lastActiveLightIndex = 0
+
+local lightMap = nil
+
+-- ///////////////////////////////////////////////
+-- /// Luven light shapes
+-- ///////////////////////////////////////////////
+
+luven.lightShapes = {}
 
 -- ///////////////////////////////////////////////
 -- /// Luven utils local functions
 -- ///////////////////////////////////////////////
 
-local function registerLight(light)
-    light.name = "lights[" .. light.id .."]"
+local function calculateLightOrigin(lightId)
+    local light = currentLights[lightId]
 
-    currentLights[light.id + 1] = light
+    local origin = { x = 0, y = 0 }
 
-    luvenShader:send(light.name .. ".position", { light.x , light.y })
-    luvenShader:send(light.name .. ".diffuse", light.color)
-    luvenShader:send(light.name .. ".power", light.power)
+    if (light.shape.originX == "center") then
+        origin.x = light.shape.sprite:getWidth() / 2
+    elseif (light.shape.originX == "min") then
+        origin.x = 0
+    elseif (light.shape.originX == "max") then
+        origin.x = light.shape.sprite:getWidth()
+    end -- if
 
-    lightsCount = lightsCount + 1
+    if (light.shape.originY == "center") then
+        origin.y = light.shape.sprite:getHeight() / 2
+    elseif (light.shape.originY == "min") then
+        origin.y = 0
+    elseif (light.shape.originY == "max") then
+        origin.y = light.shape.sprite:getHeight()
+    end -- if
 
-    luvenShader:send("lightsCount", lightsCount)
+    return origin
+end -- function
+
+local function getLastEnabledLightIndex()
+    for i = NUM_LIGHTS, 1, -1 do
+        if (currentLights[i].enabled) then
+            return i
+        end -- if
+    end -- for
+end -- function
+
+local function drawLights()
+    lg.setCanvas(lightMap)
+    lg.setBlendMode("add")
+
+    lg.clear(ambientLightColor) -- ambientLightColor
+
+    local oldR, oldG, oldB, oldA = lg.getColor()
+
+    -- lastActiveLightIndex updated in luven.update()
+    for i = 1, lastActiveLightIndex do
+        if (currentLights[i].enabled) then
+            local light = currentLights[i]
+            lgSetColor(light.color)
+            lgDraw(light.shape.sprite, light.x, light.y, light.angle, light.scaleX * light.power, light.scaleY * light.power, light.origin.x, light.origin.y)
+        end -- if
+    end -- for
+
+    lgSetColor(oldR, oldG, oldB, oldA)
+    lg.setBlendMode("alpha")
+
+    lg.setCanvas()
 end -- function
 
 local function getNextId()
     for i = 1, NUM_LIGHTS do
-        local currentLight = currentLights[i]
-        if (currentLight ~= nil) then
-            if (currentLight.enabled == false) then
-                return i - 1 
-            end -- if
-        else
-            return i - 1
+        local light = currentLights[i]
+        if (light.enabled == false) then
+            return i
         end -- if
     end -- for
 
-    return 0 -- first index
+    return 1 -- first index
 end -- function
 
 local function randomFloat(min, max)
-        return min + love.math.random() * (max - min);
+        return min + love.math.random() * (max - min)
 end -- function
 
 local function clearTable(table)
@@ -242,7 +261,7 @@ local function clearTable(table)
 end -- function
 
 local function generateFlicker(lightId)
-    local light = currentLights[lightId + 1]
+    local light = currentLights[lightId]
 
     light.color[1] = randomFloat(light.colorRange.min[1], light.colorRange.max[1])
     light.color[2] = randomFloat(light.colorRange.min[2], light.colorRange.max[2])
@@ -251,18 +270,15 @@ local function generateFlicker(lightId)
     light.power = randomFloat(light.powerRange.min, light.powerRange.max)
 
     light.flickTimer = randomFloat(light.speedRange.min, light.speedRange.max)
-
-    luvenShader:send(light.name .. ".diffuse", light.color)
-    luvenShader:send(light.name .. ".power", light.power)
-end -- if
+end -- function
 
 -- ///////////////////////////////////////////////
 -- /// Luven general functions
 -- ///////////////////////////////////////////////
 
 function luven.init(screenWidth, screenHeight, useCamera)
-    screenWidth = screenWidth or love.graphics.getWidth()
-    screenHeight = screenHeight or love.graphics.getWidth()
+    screenWidth = screenWidth or lg.getWidth()
+    screenHeight = screenHeight or lg.getHeight()
     if (useCamera ~= nil) then
         useIntegratedCamera = useCamera
     else
@@ -274,11 +290,11 @@ function luven.init(screenWidth, screenHeight, useCamera)
     assertPositiveNumber(functionName, "screenHeight", screenHeight)
     assertType(functionName, "useCamera", useIntegratedCamera, "boolean")
 
-    luvenShader = love.graphics.newShader(shader_code)
-    luvenShader:send("screen", {
-        screenWidth,
-        screenHeight
-    })
+    luven.registerLightShape("round", luvenPath .. "lights/round.png")
+    luven.registerLightShape("rectangle", luvenPath .. "lights/rectangle.png")
+    luven.registerLightShape("cone", luvenPath .. "lights/cone.png", "min", "center")
+
+    lightMap = lg.newCanvas(screenWidth, screenHeight)
 
     luvenShader:send("lightsCount", lightsCount)
 
@@ -287,13 +303,28 @@ function luven.init(screenWidth, screenHeight, useCamera)
     end -- for
 end -- function
 
--- param : color = { r, g, b } (Values between 0 - 1)
+-- param : color = { r, g, b, a (1) } (Values between 0 - 1)
 function luven.setAmbientLightColor(color)
-    luvenShader:send("ambientLightColor", color)
+    color[4] = color[4] or 1
+    ambientLightColor = color
+end -- function
+
+-- param : originX, originY : TEXT : "center", "min", "max"
+function luven.registerLightShape(name, spritePath, originX, originY)
+    originX = originX or "center"
+    originY = originY or originX
+
+    assertLightShape(name)
+
+    luven.lightShapes[name] = {
+        sprite = lg.newImage(spritePath),
+        originX = originX,
+        originY = originY
+    }
 end -- function
 
 function luven.sendCustomViewMatrix(viewMatrix)
-    luvenShader:send("viewMatrix", viewMatrix)
+    error("luven.sendCustomViewMatrix : Not implemented anymore. Stop use it.")
 end -- function
 
 function luven.update(dt)
@@ -301,7 +332,9 @@ function luven.update(dt)
         cameraUpdate(dt)
     end -- if
 
-    for i = 1, lightsCount do
+    lastActiveLightIndex = getLastEnabledLightIndex()
+
+    for i = 1, lastActiveLightIndex do
         local light = currentLights[i]
         if (light.enabled) then
             if (light.type == lightTypes.flickering) then
@@ -314,7 +347,6 @@ function luven.update(dt)
                 light.timer = light.timer + dt
                 if (light.power < light.maxPower) then
                     light.power = (light.maxPower * light.timer) / light.speed
-                    luvenShader:send(light.name .. ".power", light.power)
                 else
                     luven.removeLight(light.id)
                 end -- if
@@ -325,20 +357,20 @@ end -- function
 
 function luven.drawBegin()
     if (useIntegratedCamera) then
-        cameraDraw()
         luven.camera:set()
-        luvenShader:send("viewMatrix", { cameraGetViewMatrix() })
     end -- if
-    
-    love.graphics.setShader(luvenShader)
+
+    drawLights()
 end -- function
 
 function luven.drawEnd()
-    love.graphics.setShader()
-
     if (useIntegratedCamera) then
         luven.camera:unset()
     end -- if
+    
+    lg.setBlendMode("multiply", "premultiplied")
+    lgDraw(lightMap)
+    lg.setBlendMode("alpha")
 end -- function
 
 function luven.dispose()
@@ -349,10 +381,20 @@ function luven.dispose()
     end -- for
 
     clearTable(currentLights)
+
+    lightMap:release()
 end -- if
 
 function luven.getLightCount()
-    return lightsCount
+    local count = 0
+
+    for i = 1, lastActiveLightIndex do
+        if (currentLights[i].enabled) then
+            count = count + 1
+        end -- if
+    end -- for
+
+    return count
 end -- function
 
 -- ///////////////////////////////////////////////
@@ -361,30 +403,41 @@ end -- function
 
 -- param : color = { r, g, b } (values between 0 - 1)
 -- return : lightId
-function luven.addNormalLight(x, y, color, power)
-    local functionName = "luven.addNormalLight(x, y, color, power)"
+function luven.addNormalLight(x, y, color, power, lightShape, angle, sx, sy)
+    lightShape = lightShape or luven.lightShapes.round
+    angle = angle or 0
+    sx = sx or 1
+    sy = sy or sx
+
+    local functionName = "luven.addNormalLight(x, y, color, power, angle, sx, sy)"
     assertType(functionName, "x", x, "number")
     assertType(functionName, "y", y, "number")
     assertRangeNumber(functionName, "color[1]", color[1])
     assertRangeNumber(functionName, "color[2]", color[2])
     assertRangeNumber(functionName, "color[3]", color[3])
     assertPositiveNumber(functionName, "power", power)
+    assertType(functionName, "angle", angle, "number")
+    assertPositiveNumber(functionName, "sx", sx)
+    assertPositiveNumber(functionName, "sy", sy)
 
     local id = getNextId()
-    local light = currentLights[id + 1]
+    local light = currentLights[id]
     
     clearTable(light)
 
     light.id = id
     light.x = x
     light.y = y
+    light.angle = angle
+    light.scaleX = sx
+    light.scaleY = sy
     light.color = color
     light.power = power
     light.type = lightTypes.normal
+    light.shape = lightShape
+    light.origin = calculateLightOrigin(light.id)
 
     light.enabled = true
-
-    registerLight(light)
 
     return light.id
 end -- function
@@ -393,8 +446,13 @@ end -- function
 --          powerRange = { min = n, max = n }
 --          speedRange = { min = n, max = n }
 -- return : lightId
-function luven.addFlickeringLight(x, y, colorRange, powerRange, speedRange)
-    local functionName = "luven.addFlickeringLight(x, y, colorRange, powerRange, speedRange)"
+function luven.addFlickeringLight(x, y, colorRange, powerRange, speedRange, lightShape, angle, sx, sy)
+    lightShape = lightShape or luven.lightShapes.round
+    angle = angle or 0
+    sx = sx or 1
+    sy = sy or sx
+
+    local functionName = "luven.addFlickeringLight(x, y, colorRange, powerRange, speedRange, angle, sx, sy)"
     assertType(functionName, "x", x, "number")
     assertType(functionName, "y", y, "number")
     assertRangeNumber(functionName, "colorRange.min[1]", colorRange.min[1])
@@ -407,18 +465,26 @@ function luven.addFlickeringLight(x, y, colorRange, powerRange, speedRange)
     assertPositiveNumber(functionName, "powerRange.max", powerRange.max)
     assertPositiveNumber(functionName, "speedRange.min", speedRange.min)
     assertPositiveNumber(functionName, "speedRange.max", speedRange.max)
+    assertType(functionName, "angle", angle, "number")
+    assertPositiveNumber(functionName, "sx", sx)
+    assertPositiveNumber(functionName, "sy", sy)
     
     local id = getNextId()
-    local light = currentLights[id + 1]
+    local light = currentLights[id]
     
     clearTable(light)
 
     light.id = id
     light.x = x
     light.y = y
+    light.angle = angle
+    light.scaleX = sx
+    light.scaleY = sy
     light.color = { 0, 0, 0 }
     light.power = 0
     light.type = lightTypes.flickering
+    light.shape = lightShape
+    light.origin = calculateLightOrigin(light.id)
 
     light.flickTimer = 0
     light.colorRange = colorRange
@@ -427,15 +493,18 @@ function luven.addFlickeringLight(x, y, colorRange, powerRange, speedRange)
 
     light.enabled = true
 
-    registerLight(light)
-
     generateFlicker(light.id)
 
     return light.id
 end -- function
 
-function luven.addFlashingLight(x, y, color, maxPower, speed)
-    local functionName = "luven.addFlashingLight(x, y, color, maxPower, speed)"
+function luven.addFlashingLight(x, y, color, maxPower, speed, lightShape, angle, sx, sy)
+    lightShape = lightShape or luven.lightShapes.round
+    angle = angle or 0
+    sx = sx or 1
+    sy = sy or sx
+
+    local functionName = "luven.addFlashingLight(x, y, color, maxPower, speed, angle, sx, sy)"
     assertType(functionName, "x", x, "number")
     assertType(functionName, "y", y, "number")
     assertRangeNumber(functionName, "color[1]", color[1])
@@ -443,77 +512,86 @@ function luven.addFlashingLight(x, y, color, maxPower, speed)
     assertRangeNumber(functionName, "color[3]", color[3])
     assertPositiveNumber(functionName, "maxPower", maxPower)
     assertPositiveNumber(functionName, "speed", speed)
+    assertType(functionName, "angle", angle, "number")
+    assertPositiveNumber(functionName, "sx", sx)
+    assertPositiveNumber(functionName, "sy", sy)
 
     local id = getNextId()
-    local light = currentLights[id + 1]
-    
+    local light = currentLights[id]
     clearTable(light)
 
     light.id = id
     light.x = x
     light.y = y
+    light.angle = angle
+    light.scaleX = sx
+    light.scaleY = sy
     light.color = color
     light.power = 0
     light.type = lightTypes.flashing
+    light.shape = lightShape
+    light.origin = calculateLightOrigin(light.id)
     
     light.maxPower = maxPower
     light.speed = speed
     light.timer = 0
 
     light.enabled = true
-
-    registerLight(light)
 end -- function
 
 function luven.removeLight(lightId)
-    local index = lightId + 1
-    currentLights[index].enabled = false
+    currentLights[lightId].enabled = false
+end -- function
 
-    lightsCount = lightsCount - 1
-
-    luvenShader:send("lightsCount", lightsCount)
+function luven.moveLight(lightId, dx, dy)
+    currentLights[lightId].x = currentLights[index].x + dx
+    currentLights[lightId].y = currentLights[index].y + dy
 end -- function
 
 function luven.setLightPower(lightId, power)
-    local index = lightId + 1
-    currentLights[index].power = power
-    luvenShader:send(currentLights[index].name .. ".power", currentLights[index].power)
+    currentLights[lightId].power = power
 end -- function
 
 -- param : color = { r, g, b } (values between 0 - 1)
 function luven.setLightColor(lightId, color)
-    local index = lightId + 1
-    currentLights[index].color = color
-    luvenShader:send(currentLights[index].name .. ".diffuse", currentLights[index].color)
+    currentLights[lightId].color = color
 end -- function
 
 function luven.setLightPosition(lightId, x, y)
-    local index = lightId + 1
-    currentLights[index].x = x
-    currentLights[index].y = y
-    luvenShader:send(currentLights[index].name .. ".position", { currentLights[index].x, currentLights[index].y })
+    currentLights[lightId].x = x
+    currentLights[lightId].y = y
 end -- function
 
-function luven.moveLight(lightId, dx, dy)
-    local index = lightId + 1
-    currentLights[index].x = currentLights[index].x + dx
-    currentLights[index].y = currentLights[index].y + dy
-    luvenShader:send(currentLights[index].name .. ".position", { currentLights[index].x, currentLights[index].y })
+function luven.setLightRotation(lightId, dr)
+    currentLights[lightId].angle = dr
 end -- function
 
-function luven.getLightPosition(lightId)
-    local index = lightId + 1
-    return currentLights[index].x, currentLights[index].y
+function luven.setLightScale(lightId, sx, sy)
+    sx = sx or 1
+    sy = sy or sx
+
+    currentLights[lightId].scaleX = sx
+    currentLights[lightId].scaleY = sy
 end -- function
 
 function luven.getLightPower(lightId)
-    local index = lightId + 1
-    return currentLights[index].power
+    return currentLights[lightId].power
 end -- function
 
 function luven.getLightColor(lightId)
-    local index = lightId + 1
-    return currentLights[index].color
+    return currentLights[lightId].color
+end -- function
+
+function luven.getLightPosition(lightId)
+    return currentLights[lightId].x, currentLights[lightId].y
+end -- function
+
+function luven.getLightRotation(lightId)
+    return currentLights[lightId].angle
+end -- function
+
+function luven.getLightScale(lightId)
+    return currentLights[lightId].scaleX, currentLights[lightId].scaleY
 end -- function
 
 return luven
