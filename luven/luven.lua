@@ -1,5 +1,5 @@
 local luven = {
-    _VERSION     = 'Luven v1.1',
+    _VERSION     = 'Luven v1.11',
     _URL         = 'https://github.com/chicogamedev/Luven',
     _DESCRIPTION = 'A minimalist light engine for Löve2D',
     _CONTRIBUTORS = 'Lionel Leeser, Pedro Gimeno (Help with camera)',
@@ -342,7 +342,7 @@ function luven.drawEnd()
     if (useIntegratedCamera) then
         luven.camera:unset()
     end -- if
-    
+
     lg.setBlendMode("multiply", "premultiplied")
     lgDraw(lightMap)
     lg.setBlendMode("alpha")
@@ -356,6 +356,7 @@ function luven.dispose()
     end -- for
 
     clearTable(currentLights)
+    clearTable(luven.lightShapes)
 
     lightMap:release()
 end -- if
@@ -397,7 +398,7 @@ function luven.addNormalLight(x, y, color, power, lightShape, angle, sx, sy)
 
     local id = getNextId()
     local light = currentLights[id]
-    
+
     clearTable(light)
 
     light.id = id
@@ -442,10 +443,10 @@ function luven.addFlickeringLight(x, y, colorRange, powerRange, speedRange, ligh
     assertType(functionName, "angle", angle, "number")
     assertPositiveNumber(functionName, "sx", sx)
     assertPositiveNumber(functionName, "sy", sy)
-    
+
     local id = getNextId()
     local light = currentLights[id]
-    
+
     clearTable(light)
 
     light.id = id
@@ -503,7 +504,7 @@ function luven.addFlashingLight(x, y, color, maxPower, speed, lightShape, angle,
     light.power = 0
     light.type = lightTypes.flashing
     light.shape = lightShape
-    
+
     light.maxPower = maxPower
     light.speed = speed
     light.timer = 0
