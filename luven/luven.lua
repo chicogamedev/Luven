@@ -1,5 +1,5 @@
 local luven = {
-    _VERSION     = 'Luven v1.11',
+    _VERSION     = 'Luven v1.2 dev',
     _URL         = 'https://github.com/chicogamedev/Luven',
     _DESCRIPTION = 'A minimalist light engine for Löve2D',
     _CONTRIBUTORS = 'Lionel Leeser, Pedro Gimeno (Help with camera)',
@@ -63,6 +63,14 @@ local function assertLightShape(newShapeName, level)
 end -- function
 
 -- ///////////////////////////////////////////////
+-- /// Math functions
+-- ///////////////////////////////////////////////
+
+local function lerp(a, b, x)
+     return a + (b - a)*x
+end
+
+-- ///////////////////////////////////////////////
 -- /// Aliases
 -- ///////////////////////////////////////////////
 
@@ -82,17 +90,47 @@ luven.camera.scaleX = 1
 luven.camera.scaleY = 1
 luven.camera.rotation = 0
 luven.camera.transform = nil
+
 luven.camera.shakeDuration = 0
 luven.camera.shakeMagnitude = 0
+
+luven.camera.fading = false
+luven.camera.fadeDuration = 0
+luven.camera.fadeTimer = 0
+luven.camera.fadeColor = { 0, 0, 0, 0 }
+luven.camera.startFadeColor = nil
+luven.camera.endFadeColor = nil
+luven.camera.fadeAction = nil
 
 -- //////////////////////////////
 -- /// Camera local functions
 -- //////////////////////////////
 
 local function cameraUpdate(dt)
-    if (luven.camera.shakeDuration > 0) then
-        luven.camera.shakeDuration = luven.camera.shakeDuration - dt
+    local lc = luven.camera
+
+    if (lc.shakeDuration > 0) then
+        lc.shakeDuration = lc.shakeDuration - dt
     end -- if
+
+    if (lc.fading) then
+        lc.fadeTimer = lc.fadeTimer + dt
+        lc.fadeColor = {
+            lerp(lc.startFadeColor[1], lc.endFadeColor[1], lc.fadeTimer / lc.fadeDuration),
+            lerp(lc.startFadeColor[2], lc.endFadeColor[2], lc.fadeTimer / lc.fadeDuration),
+            lerp(lc.startFadeColor[3], lc.endFadeColor[3], lc.fadeTimer / lc.fadeDuration),
+            lerp(lc.startFadeColor[4], lc.endFadeColor[4], lc.fadeTimer / lc.fadeDuration)
+        }
+
+        if (lc.fadeTimer >= lc.fadeDuration) then
+            lc.fadeTimer = 0
+            lc.fading = false
+
+            if (lc.fadeAction ~= nil) then
+                lc.fadeAction()
+            end
+        end
+    end
 end -- function
 
 local function cameraGetViewMatrix()
@@ -127,6 +165,16 @@ function luven.camera:unset()
     lg.pop()
 end -- function
 
+function luven.camera:draw()
+    local oldR, oldG, oldB, oldA = lg.getColor()
+
+    -- Fade rectangle
+    lg.setColor(self.fadeColor)
+    lg.rectangle("fill", 0, 0, lg.getWidth(), lg.getHeight())
+
+    lg.setColor(oldR, oldG, oldB, oldA)
+end
+
 function luven.camera:setPosition(x, y)
     self.x = x
     self.y = y
@@ -150,6 +198,17 @@ function luven.camera:setShake(duration, magnitude)
     self.shakeDuration = duration
     self.shakeMagnitude = magnitude
 end -- function
+
+-- color : COLOR : { r, g, b, a }
+-- action : FUNCTION
+function luven.camera:setFade(duration, color, action)
+    self.fadeDuration = duration
+    self.fadeTimer = 0
+    self.startFadeColor = self.fadeColor
+    self.endFadeColor = color
+    self.fadeAction = action
+    self.fading = true
+end
 
 -- ///////////////////////////////////////////////
 -- /// Luven variables declarations
