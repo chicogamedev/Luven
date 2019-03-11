@@ -76,7 +76,7 @@ function love.keypressed(key)
 
     if (key == "f") then
         --Luven.addFlashingLight(Luven.camera.x, Luven.camera.y, { 1.0, 0.0, 0.0 }, 1, 3)
-        Luven.camera:setFade(3, { 0, 0, 0, 1 }, function() Luven.camera:setFade(3, { 0, 0, 0, 0 }) end)
+        Luven.camera:setFade(3, { 1, 0, 0, 1 }, function() Luven.camera:setFade(3, { 0, 0, 0, 0 }) end)
     end -- if
 
     if (key == "g") then
@@ -95,7 +95,7 @@ function love.draw()
     love.graphics.print("Current FPS: " .. tostring(love.timer.getFPS()), 10, 10)
     love.graphics.print("Number of lights: " .. tostring(Luven.getLightCount()), 10, 30)
 
-    Luven.camera:drawEffects()
+    Luven.camera:draw()
 end -- function
 
 function love.quit()
