@@ -1,5 +1,5 @@
 local luven = {
-    _VERSION     = 'Luven v1.21 dev',
+    _VERSION     = 'Luven v1.22 dev',
     _URL         = 'https://github.com/chicogamedev/Luven',
     _DESCRIPTION = 'A minimalist light engine for Löve2D',
     _CONTRIBUTORS = 'Lionel Leeser, Pedro Gimeno (Help with camera)',
@@ -429,12 +429,16 @@ function luven.drawEnd()
     lg.setBlendMode("alpha")
 end
 
-function luven.dispose()
+function luven.removeAllLights()
     for _, v in pairs(currentLights) do
         if (v.enabled) then
             luven.removeLight(v.id)
         end
     end
+end
+
+function luven.dispose()
+    luven.removeAllLights()
 
     clearTable(currentLights)
     clearTable(luven.lightShapes)

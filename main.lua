@@ -16,7 +16,7 @@ local power = 0.25
 
 function love.load()
     love.graphics.setDefaultFilter("nearest", "nearest")
-    Profi:start()
+    -- Profi:start()
     image = love.graphics.newImage("Background.png")
 
     Luven.init()
@@ -100,6 +100,6 @@ end -- function
 
 function love.quit()
     Luven.dispose()
-    Profi:stop()
-	Profi:writeReport("LuvenProfile.txt")
+    -- Profi:stop()
+	-- Profi:writeReport("LuvenProfile.txt")
 end -- function
