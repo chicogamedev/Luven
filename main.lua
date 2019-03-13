@@ -16,7 +16,7 @@ local power = 0.25
 
 function love.load()
     love.graphics.setDefaultFilter("nearest", "nearest")
-    Profi:start()
+    -- Profi:start()
     image = love.graphics.newImage("Background.png")
 
     Luven.init()
@@ -31,7 +31,7 @@ end -- function
 
 function love.update(dt)
     Luven.update(dt)
-    
+
     local vx, vy = 0, 0
 
     if (love.keyboard.isDown("w")) then
@@ -75,23 +75,31 @@ function love.keypressed(key)
     end -- if
 
     if (key == "f") then
-        Luven.addFlashingLight(Luven.camera.x, Luven.camera.y, { 1.0, 0.0, 0.0 }, 1, 3)
+        --Luven.addFlashingLight(Luven.camera.x, Luven.camera.y, { 1.0, 0.0, 0.0 }, 1, 3)
+        Luven.camera:setFade(3, { 1, 0, 0, 1 }, function() Luven.camera:setFade(3, { 0, 0, 0, 0 }) end)
+    end -- if
+
+    if (key == "g") then
+        --Luven.addFlashingLight(Luven.camera.x, Luven.camera.y, { 1.0, 0.0, 0.0 }, 1, 3)
+        Luven.camera:setFade(3, { 0, 0, 0, 0 })
     end -- if
 end -- function
 
 function love.draw()
     Luven.drawBegin()
-    
+
     love.graphics.draw(image, 0, 0, 0, 0.5, 0.5)
 
     Luven.drawEnd()
 
     love.graphics.print("Current FPS: " .. tostring(love.timer.getFPS()), 10, 10)
     love.graphics.print("Number of lights: " .. tostring(Luven.getLightCount()), 10, 30)
+
+    Luven.camera:draw()
 end -- function
 
 function love.quit()
     Luven.dispose()
-    Profi:stop()
-	Profi:writeReport("LuvenProfile.txt")
+    -- Profi:stop()
+	-- Profi:writeReport("LuvenProfile.txt")
 end -- function
