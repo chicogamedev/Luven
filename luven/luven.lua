@@ -1,5 +1,5 @@
 local luven = {
-    _VERSION     = 'Luven v1.22 dev',
+    _VERSION     = 'Luven v1.2',
     _URL         = 'https://github.com/chicogamedev/Luven',
     _DESCRIPTION = 'A minimalist light engine for Löve2D',
     _CONTRIBUTORS = 'Lionel Leeser, Pedro Gimeno (Help with camera)',
