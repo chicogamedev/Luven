@@ -273,6 +273,8 @@ local function getLastEnabledLightIndex()
             return i
         end
     end
+
+    return 0
 end
 
 local function drawLights()
