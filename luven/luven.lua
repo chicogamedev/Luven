@@ -1,12 +1,12 @@
 local luven = {
-    _VERSION     = 'Luven v1.2',
+    _VERSION     = 'Luven v1.3',
     _URL         = 'https://github.com/chicogamedev/Luven',
     _DESCRIPTION = 'A minimalist light engine for Löve2D',
     _CONTRIBUTORS = 'Lionel Leeser, Pedro Gimeno (Help with camera)',
     _LICENSE     = [[
         MIT License
 
-        Copyright (c) 2019 Lionel Leeser
+        Copyright (c) 2020 Lionel Leeser
 
         Permission is hereby granted, free of charge, to any person obtaining a copy
         of this software and associated documentation files (the "Software"), to deal
@@ -461,6 +461,28 @@ function luven.getLightCount()
 end
 
 -- ///////////////////////////////////////////////
+-- /// Luven utils functions
+-- ///////////////////////////////////////////////
+
+function luven.newColor(r, g, b)
+    return { r, g, b }
+end
+
+function luven.newColorRange(minR, minG, minB, maxR, maxG, maxB)
+    minR = minR or 0
+    minG = minG or 0
+    minB = minB or 0
+    maxR = maxR or 0
+    maxG = maxG or 0
+    maxB = maxB or 0
+    return { min = { minR, minG, minB }, max = { maxR, maxG, maxB } }
+end
+
+function luven.newNumberRange(minN, maxN)
+    return { min = minN, max = maxN }
+end
+
+-- ///////////////////////////////////////////////
 -- /// Luven lights functions
 -- ///////////////////////////////////////////////
 
@@ -608,13 +630,21 @@ function luven.moveLight(lightId, dx, dy)
     currentLights[lightId].y = currentLights[index].y + dy
 end
 
-function luven.setLightPower(lightId, power)
-    currentLights[lightId].power = power
+function luven.setLightPower(lightId, p)
+    currentLights[lightId].power = p
+end
+
+function luven.setLightPowerRange(lightId, r)
+    currentLights[lightId].powerRange = r
 end
 
 -- param : color = { r, g, b } (values between 0 - 1)
-function luven.setLightColor(lightId, color)
-    currentLights[lightId].color = color
+function luven.setLightColor(lightId, c)
+    currentLights[lightId].color = c
+end
+
+function luven.setLightColorRange(lightId, r)
+    currentLights[lightId].colorRange = r
 end
 
 function luven.setLightPosition(lightId, x, y)
@@ -624,6 +654,10 @@ end
 
 function luven.setLightRotation(lightId, dr)
     currentLights[lightId].angle = dr
+end
+
+function luven.setLightSpeedRange(lightId, r)
+    currentLights[lightId].speedRange = r
 end
 
 function luven.setLightScale(lightId, sx, sy)
@@ -638,8 +672,16 @@ function luven.getLightPower(lightId)
     return currentLights[lightId].power
 end
 
+function luven.getLightPowerRange(lightId)
+    return currentLights[lightId].powerRange
+end
+
 function luven.getLightColor(lightId)
     return currentLights[lightId].color
+end
+
+function luven.getLightColorRange(lightId)
+    return currentLights[lightId].colorRange
 end
 
 function luven.getLightPosition(lightId)
@@ -648,6 +690,10 @@ end
 
 function luven.getLightRotation(lightId)
     return currentLights[lightId].angle
+end
+
+function luven.getLightSpeedRange(lightId)
+    return currentLights[lightId].speedRange
 end
 
 function luven.getLightScale(lightId)
