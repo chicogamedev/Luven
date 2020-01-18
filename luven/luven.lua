@@ -464,18 +464,21 @@ end
 -- /// Luven utils functions
 -- ///////////////////////////////////////////////
 
-function luven.newColor(r, g, b)
-    return { r, g, b }
+function luven.newColor(r, g, b, a)
+    a = a or 1
+    return { r, g, b, a }
 end
 
-function luven.newColorRange(minR, minG, minB, maxR, maxG, maxB)
+function luven.newColorRange(minR, minG, minB, maxR, maxG, maxB, minA, maxA)
     minR = minR or 0
     minG = minG or 0
     minB = minB or 0
     maxR = maxR or 0
     maxG = maxG or 0
     maxB = maxB or 0
-    return { min = { minR, minG, minB }, max = { maxR, maxG, maxB } }
+    minA = minA or 1
+    maxA = maxA or 1
+    return { min = { minR, minG, minB, minA }, max = { maxR, maxG, maxB, maxA } }
 end
 
 function luven.newNumberRange(minN, maxN)
