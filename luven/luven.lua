@@ -405,7 +405,7 @@ function luven.drawEnd()
 end
 
 function luven.removeAllLights()
-    for _, v in pairs(currentLights) do
+    for _, v in ipairs(currentLights) do
         if (v.enabled) then
             luven.removeLight(v.id)
         end
