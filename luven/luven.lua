@@ -267,16 +267,6 @@ luven.lightShapes = {}
 -- /// Luven utils local functions
 -- ///////////////////////////////////////////////
 
-local function getLastEnabledLightIndex()
-    for i = NUM_LIGHTS, 1, -1 do
-        if (currentLights[i].enabled) then
-            return i
-        end
-    end
-
-    return 0
-end
-
 local function drawLights()
     lg.setCanvas(lightMap)
     lg.setBlendMode("add")
@@ -286,9 +276,9 @@ local function drawLights()
     local oldR, oldG, oldB, oldA = lg.getColor()
 
     -- lastActiveLightIndex updated in luven.update()
-    for i = 1, lastActiveLightIndex do
-        if (currentLights[i].enabled) then
-            local light = currentLights[i]
+    for i = 1, #currentLights do
+        local light = currentLights[i]
+        if (light.enabled) then
             lgSetColor(light.color)
             lgDraw(light.shape.sprite, light.x, light.y, light.angle, light.scaleX * light.power, light.scaleY * light.power, light.shape.originX, light.shape.originY)
         end
@@ -298,17 +288,6 @@ local function drawLights()
     lg.setBlendMode("alpha")
 
     lg.setCanvas()
-end
-
-local function getNextId()
-    for i = 1, NUM_LIGHTS do
-        local light = currentLights[i]
-        if (light.enabled == false) then
-            return i
-        end
-    end
-
-    return 1 -- first index
 end
 
 local function randomFloat(min, max)
@@ -354,10 +333,6 @@ function luven.init(screenWidth, screenHeight, useCamera)
     luven.registerLightShape("cone", luvenPath .. "lights/cone.png", 0)
 
     lightMap = lg.newCanvas(screenWidth, screenHeight)
-
-    for i = 1, NUM_LIGHTS do
-        currentLights[i] = { enabled = false }
-    end
 end
 
 -- param : color = { r, g, b, a (1) } (Values between 0 - 1)
@@ -390,9 +365,7 @@ function luven.update(dt)
         cameraUpdate(dt)
     end
 
-    lastActiveLightIndex = getLastEnabledLightIndex()
-
-    for i = 1, lastActiveLightIndex do
+    for i = 1, #currentLights do
         local light = currentLights[i]
         if (light.enabled) then
             if (light.type == lightTypes.flickering) then
@@ -508,10 +481,9 @@ function luven.addNormalLight(x, y, color, power, lightShape, angle, sx, sy)
     assertPositiveNumber(functionName, "sx", sx)
     assertPositiveNumber(functionName, "sy", sy)
 
-    local id = getNextId()
+    local id = #currentLights + 1
+    currentLights[id] = {}
     local light = currentLights[id]
-
-    clearTable(light)
 
     light.id = id
     light.x = x
@@ -556,10 +528,9 @@ function luven.addFlickeringLight(x, y, colorRange, powerRange, speedRange, ligh
     assertPositiveNumber(functionName, "sx", sx)
     assertPositiveNumber(functionName, "sy", sy)
 
-    local id = getNextId()
+    local id = #currentLights + 1
+    currentLights[id] = {}
     local light = currentLights[id]
-
-    clearTable(light)
 
     light.id = id
     light.x = x
@@ -602,9 +573,9 @@ function luven.addFlashingLight(x, y, color, maxPower, speed, lightShape, angle,
     assertPositiveNumber(functionName, "sx", sx)
     assertPositiveNumber(functionName, "sy", sy)
 
-    local id = getNextId()
+    local id = #currentLights + 1
+    currentLights[id] = {}
     local light = currentLights[id]
-    clearTable(light)
 
     light.id = id
     light.x = x
