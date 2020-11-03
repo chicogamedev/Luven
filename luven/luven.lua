@@ -422,15 +422,7 @@ function luven.dispose()
 end
 
 function luven.getLightCount()
-    local count = 0
-
-    for i = 1, lastActiveLightIndex do
-        if (currentLights[i].enabled) then
-            count = count + 1
-        end
-    end
-
-    return count
+    return #currentLights
 end
 
 -- ///////////////////////////////////////////////
