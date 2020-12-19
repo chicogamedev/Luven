@@ -74,6 +74,10 @@ function love.keypressed(key)
         lightId = Luven.addNormalLight(Luven.camera.x, Luven.camera.y, { 1.0, 1.0 , 1.0 }, 0.05)
     end -- if
 
+    if (key == "z") then
+        Luven.addFlashingLight(Luven.camera.x, Luven.camera.y, { 1.0, 0.0, 0.0 }, 1, 3)
+    end
+
     if (key == "f") then
         --Luven.addFlashingLight(Luven.camera.x, Luven.camera.y, { 1.0, 0.0, 0.0 }, 1, 3)
         Luven.camera:setFade(3, { 1, 0, 0, 1 }, function() Luven.camera:setFade(3, { 0, 0, 0, 0 }) end)
