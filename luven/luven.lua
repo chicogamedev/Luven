@@ -592,8 +592,8 @@ function luven.removeLight(lightId)
 end
 
 function luven.moveLight(lightId, dx, dy)
-    currentLights[lightId].x = currentLights[index].x + dx
-    currentLights[lightId].y = currentLights[index].y + dy
+    currentLights[lightId].x = currentLights[lightId].x + dx
+    currentLights[lightId].y = currentLights[lightId].y + dy
 end
 
 function luven.setLightPower(lightId, p)
